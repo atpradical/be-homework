@@ -1,18 +1,21 @@
-import { Router, Response, Request } from 'express';
-import { db } from '../../../db/in-memory.db';
-import { postsRouter } from '../../posts';
+import { Router } from 'express';
+import {
+  createBlogHandler,
+  deleteBlogHandler,
+  getBlogHandler,
+  getBlogListHandler,
+  updateBlogHandler,
+} from '../handlers';
 
 export const blogsRouter = Router({});
 
 blogsRouter
-  .get('/', (req: Request, res: Response) => {
-    res.send(db.blogs);
-  })
+  .get('/', getBlogListHandler)
 
-  .post('/', (req: Request, res: Response) => {})
+  .post('/', createBlogHandler)
 
-  .get('/:id', (req: Request, res: Response) => {})
+  .get('/:id', getBlogHandler)
 
-  .put('/:id', (req: Request, res: Response) => {})
+  .put('/:id', updateBlogHandler)
 
-  .delete('/:id', (req: Request, res: Response) => {});
+  .delete('/:id', deleteBlogHandler);

@@ -72,7 +72,7 @@ export const db: DBInMemory = {
   ],
   posts: [
     {
-      id: 'p1',
+      id: '1',
       title: 'The Future of Technology',
       shortDescription: 'What to expect in tech over the next decade.',
       content:
@@ -81,7 +81,7 @@ export const db: DBInMemory = {
       blogName: 'Tech Today',
     },
     {
-      id: 'p2',
+      id: '2',
       title: 'Top 10 Travel Destinations',
       shortDescription: 'Best places to visit this year.',
       content:
@@ -90,7 +90,7 @@ export const db: DBInMemory = {
       blogName: 'Travel Diaries',
     },
     {
-      id: 'p3',
+      id: '3',
       title: 'Morning Workout Routine',
       shortDescription: 'Quick and effective morning exercises.',
       content:
@@ -99,7 +99,7 @@ export const db: DBInMemory = {
       blogName: 'Fitness Life',
     },
     {
-      id: 'p4',
+      id: '4',
       title: 'Easy Dinner Recipes',
       shortDescription: 'Tasty meals you can make in under 30 minutes.',
       content:
@@ -108,7 +108,7 @@ export const db: DBInMemory = {
       blogName: 'Cooking Master',
     },
     {
-      id: 'p5',
+      id: '5',
       title: 'The Power of Science',
       shortDescription: 'How science changes our lives daily.',
       content:
@@ -117,7 +117,7 @@ export const db: DBInMemory = {
       blogName: 'Science World',
     },
     {
-      id: 'p6',
+      id: '6',
       title: 'Design Trends 2025',
       shortDescription: 'What’s new in the world of design.',
       content:
@@ -126,7 +126,7 @@ export const db: DBInMemory = {
       blogName: 'Art & Design',
     },
     {
-      id: 'p7',
+      id: '7',
       title: 'Budget Planning Tips',
       shortDescription: 'How to manage your money wisely.',
       content:
@@ -135,7 +135,7 @@ export const db: DBInMemory = {
       blogName: 'Finance Tips',
     },
     {
-      id: 'p8',
+      id: '8',
       title: 'JavaScript Basics',
       shortDescription: 'Getting started with JS.',
       content:
@@ -144,7 +144,7 @@ export const db: DBInMemory = {
       blogName: 'Programming Hub',
     },
     {
-      id: 'p9',
+      id: '9',
       title: 'Oscar Winners 2024',
       shortDescription: 'Highlights from this year’s ceremony.',
       content:
@@ -153,7 +153,7 @@ export const db: DBInMemory = {
       blogName: 'Movie Reviews',
     },
     {
-      id: 'p10',
+      id: '10',
       title: 'Protecting Wildlife',
       shortDescription: 'Why biodiversity matters.',
       content:
