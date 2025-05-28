@@ -1,5 +1,4 @@
-import { Blog } from '../features/blogs/types';
-import { Post } from '../features/posts/types';
+import { Blog, Post } from '../features';
 
 type DBInMemory = {
   blogs: Blog[];
