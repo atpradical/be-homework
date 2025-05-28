@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { db } from '../../../db/in-memory.db';
 import { HttpStatus } from '../../../core';
 import { BlogInputDto } from '../dto/blogInputDto';
+import { blogsRepository } from '../repositories/blogs.repository';
 
 export const createBlogHandler = (
   req: Request<{}, {}, BlogInputDto>,
@@ -20,7 +21,6 @@ export const createBlogHandler = (
     websiteUrl: body.websiteUrl,
   };
 
-  db.blogs.push(newBlog);
-
+  blogsRepository.create(newBlog);
   res.status(HttpStatus.Created).send(newBlog);
 };
