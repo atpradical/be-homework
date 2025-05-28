@@ -6,7 +6,7 @@ type DBInMemory = {
   posts: Post[];
 };
 
-const db: DBInMemory = {
+export const db: DBInMemory = {
   blogs: [
     {
       id: '1',
