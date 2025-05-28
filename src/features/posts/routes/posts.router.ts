@@ -1,17 +1,21 @@
-import { Router, Response, Request } from 'express';
-import { db } from '../../../db/in-memory.db';
+import { Router } from 'express';
+import {
+  createPostHandler,
+  deletePostHandler,
+  getPostHandler,
+  getPostListHandler,
+  updatePostHandler,
+} from '../handlers';
 
 export const postsRouter = Router({});
 
 postsRouter
-  .get('/', (req: Request, res: Response) => {
-    res.send(db.posts);
-  })
+  .get('/', getPostListHandler)
 
-  .post('/', (req: Request, res: Response) => {})
+  .post('/', createPostHandler)
 
-  .get('/:id', (req: Request, res: Response) => {})
+  .get('/:id', getPostHandler)
 
-  .put('/:id', (req: Request, res: Response) => {})
+  .put('/:id', updatePostHandler)
 
-  .delete('/:id', (req: Request, res: Response) => {});
+  .delete('/:id', deletePostHandler);
