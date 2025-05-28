@@ -1,6 +1,6 @@
 import express, { Express } from 'express';
-import { testingRouter } from './testing/routes/testing.router';
-import { TESTING_PATH } from './core/constants';
+import { blogsRouter, postsRouter, testingRouter } from './features';
+import { BLOGS_PATH, POSTS_PATH, TESTING_PATH } from './core/constants';
 
 export const setupApp = (app: Express) => {
   app.use(express.json()); // middleware для парсинга JSON в теле запроса
@@ -10,6 +10,8 @@ export const setupApp = (app: Express) => {
     res.status(200).send('Hello world!');
   });
 
+  app.use(BLOGS_PATH, blogsRouter);
+  app.use(POSTS_PATH, postsRouter);
   app.use(TESTING_PATH, testingRouter);
 
   return app;
