@@ -5,17 +5,35 @@ import {
   getBlogHandler,
   getBlogListHandler,
   updateBlogHandler,
-} from '../handlers';
+} from './handlers';
+import { idValidation, inputValidationResultMiddleware } from '../../../core';
+import { blogsInputValidation } from '../validation/blogs.input-dto.validation-middleware';
 
 export const blogsRouter = Router({});
 
 blogsRouter
   .get('/', getBlogListHandler)
 
-  .post('/', createBlogHandler)
+  .post(
+    '/',
+    blogsInputValidation,
+    inputValidationResultMiddleware,
+    createBlogHandler,
+  )
 
-  .get('/:id', getBlogHandler)
+  .get('/:id', idValidation, inputValidationResultMiddleware, getBlogHandler)
 
-  .put('/:id', updateBlogHandler)
+  .put(
+    '/:id',
+    idValidation,
+    blogsInputValidation,
+    inputValidationResultMiddleware,
+    updateBlogHandler,
+  )
 
-  .delete('/:id', deleteBlogHandler);
+  .delete(
+    '/:id',
+    idValidation,
+    inputValidationResultMiddleware,
+    deleteBlogHandler,
+  );

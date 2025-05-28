@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { db } from '../../../db/in-memory.db';
-import { HttpStatus } from '../../../core';
-import { BlogInputDto } from '../dto/blogInputDto';
-import { blogsRepository } from '../repositories/blogs.repository';
+import { db } from '../../../../db/in-memory.db';
+import { HttpStatus } from '../../../../core';
+import { BlogInputDto } from '../../dto/blogInputDto';
+import { blogsRepository } from '../../repositories/blogs.repository';
 
 export const createBlogHandler = (
   req: Request<{}, {}, BlogInputDto>,

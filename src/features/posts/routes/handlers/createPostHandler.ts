@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { db } from '../../../db/in-memory.db';
-import { HttpStatus } from '../../../core';
-import { postsRepository } from '../repositories/posts.repository';
-import { PostInputDto } from '../dto/postInputDto';
-import { blogsRepository } from '../../blogs/repositories/blogs.repository';
+import { db } from '../../../../db/in-memory.db';
+import { HttpStatus } from '../../../../core';
+import { postsRepository } from '../../repositories/posts.repository';
+import { PostInputDto } from '../../dto/postInputDto';
+import { blogsRepository } from '../../../blogs/repositories/blogs.repository';
 
 export const createPostHandler = (
   req: Request<{}, {}, PostInputDto>,

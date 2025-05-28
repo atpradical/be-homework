@@ -5,17 +5,35 @@ import {
   getPostHandler,
   getPostListHandler,
   updatePostHandler,
-} from '../handlers';
+} from './handlers';
+import { idValidation, inputValidationResultMiddleware } from '../../../core';
+import { postsInputValidation } from '../validation/posts.input-dto.validation-middleware';
 
 export const postsRouter = Router({});
 
 postsRouter
   .get('/', getPostListHandler)
 
-  .post('/', createPostHandler)
+  .post(
+    '/',
+    postsInputValidation,
+    inputValidationResultMiddleware,
+    createPostHandler,
+  )
 
-  .get('/:id', getPostHandler)
+  .get('/:id', idValidation, inputValidationResultMiddleware, getPostHandler)
 
-  .put('/:id', updatePostHandler)
+  .put(
+    '/:id',
+    idValidation,
+    postsInputValidation,
+    inputValidationResultMiddleware,
+    updatePostHandler,
+  )
 
-  .delete('/:id', deletePostHandler);
+  .delete(
+    '/:id',
+    idValidation,
+    inputValidationResultMiddleware,
+    deletePostHandler,
+  );

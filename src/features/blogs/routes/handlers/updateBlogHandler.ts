@@ -1,24 +1,24 @@
 import { Request, Response } from 'express';
-import { HttpStatus } from '../../../core';
-import { PostInputDto } from '../dto/postInputDto';
-import { postsRepository } from '../repositories/posts.repository';
+import { HttpStatus } from '../../../../core';
+import { BlogInputDto } from '../../dto/blogInputDto';
+import { blogsRepository } from '../../repositories/blogs.repository';
 
-export const updatePostHandler = (
-  req: Request<{ id: string }, {}, PostInputDto>,
+export const updateBlogHandler = (
+  req: Request<{ id: string }, {}, BlogInputDto>,
   res: Response,
 ) => {
   const id = req.params.id;
   //TODO: валидация на body если есть ошибки отправка ошибки
 
-  const post = postsRepository.findById(id);
+  const blog = blogsRepository.findById(id);
 
-  if (!post) {
+  if (!blog) {
     //TODO: отправлять правильный формат ошибки filed и message
     res.sendStatus(HttpStatus.NotFound);
     return;
   }
 
   //TODO:добавить репозиторий и делать обновление там.
-  postsRepository.update(id, req.body);
-  res.status(HttpStatus.Ok).send(post);
+  blogsRepository.update(id, req.body);
+  res.status(HttpStatus.Ok).send(blog);
 };
