@@ -21,7 +21,7 @@ export const createPostHandler = (
   //TODO:добавить репозиторий и делать обновление там.
   const newPost = {
     id: db.posts.length
-      ? String(parseInt(db.blogs[db.blogs.length - 1].id) + 1)
+      ? String(parseInt(db.posts[db.posts.length - 1].id) + 1)
       : '1',
     title: body.title,
     shortDescription: body.shortDescription,

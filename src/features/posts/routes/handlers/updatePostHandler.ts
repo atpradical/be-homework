@@ -20,5 +20,5 @@ export const updatePostHandler = (
 
   //TODO:добавить репозиторий и делать обновление там.
   postsRepository.update(id, req.body);
-  res.status(HttpStatus.Ok).send(post);
+  res.sendStatus(HttpStatus.NoContent);
 };

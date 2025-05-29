@@ -20,5 +20,5 @@ export const updateBlogHandler = (
 
   //TODO:добавить репозиторий и делать обновление там.
   blogsRepository.update(id, req.body);
-  res.status(HttpStatus.Ok).send(blog);
+  res.sendStatus(HttpStatus.NoContent);
 };

@@ -9,7 +9,7 @@ export const titleValidation = body('title')
   .isLength({ min: 1, max: 30 })
   .withMessage('length is not correct');
 
-export const shortDescriptionValidation = body('shortDescriptionValidation')
+export const shortDescriptionValidation = body('shortDescription')
   .exists()
   .withMessage('is required')
   .isString()
