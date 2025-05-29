@@ -3,4 +3,4 @@ export type ValidationErrorType = {
   message: string;
 };
 
-export type ValidationErrorDto = { errorMessages: ValidationErrorType[] };
+export type ValidationErrorDto = { errorsMessages: ValidationErrorType[] };
