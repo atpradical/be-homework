@@ -4,7 +4,7 @@ import { FieldValidationError, ValidationError } from 'express-validator';
 export const createErrorMessages = (
   errors: ValidationErrorType[],
 ): ValidationErrorDto => {
-  return { errorMessages: errors };
+  return { errorsMessages: errors };
 };
 
 export const formatErrors = (error: ValidationError): ValidationErrorType => {
