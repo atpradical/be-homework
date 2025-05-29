@@ -1,14 +1,5 @@
 import { body } from 'express-validator';
 
-export const titleValidation = body('title')
-  .exists()
-  .withMessage('is required')
-  .isString()
-  .withMessage('must be a string')
-  .trim()
-  .isLength({ min: 1, max: 30 })
-  .withMessage('length is not correct');
-
 export const shortDescriptionValidation = body('shortDescription')
   .exists()
   .withMessage('is required')
@@ -16,6 +7,15 @@ export const shortDescriptionValidation = body('shortDescription')
   .withMessage('must be a string')
   .trim()
   .isLength({ min: 1, max: 100 })
+  .withMessage('length is not correct');
+
+export const titleValidation = body('title')
+  .exists()
+  .withMessage('is required')
+  .isString()
+  .withMessage('must be a string')
+  .trim()
+  .isLength({ min: 1, max: 30 })
   .withMessage('length is not correct');
 
 export const contentValidation = body('content')
