@@ -4,6 +4,6 @@ dotenv.config();
 
 export const SETTINGS = {
   PORT: process.env.PORT || 5003,
-  MONGO_URL: process.env.MONGO_URL || 'mongodb://localhost:27017',
+  MONGO_URL: process.env.MONGO_URL || 'mongodb://localhost:27017', //dev url
   DB_NAME: process.env.DB_NAME || 'ed-back-blog-platform',
 };
