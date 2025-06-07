@@ -33,6 +33,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "express-validator": "^7.2.1"
+    "express-validator": "^7.2.1",
+    "mongodb": "^6.17.0"
   }
 }
