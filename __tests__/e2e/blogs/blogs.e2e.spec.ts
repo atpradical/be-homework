@@ -8,9 +8,6 @@ import { bootstrap } from '../../../src';
 import { SETTINGS } from '../../../src/core/settings';
 import { ObjectId } from 'mongodb';
 
-// Увеличиваем таймаут для тестов до 30 секунд
-jest.setTimeout(10000);
-
 describe('Blogs API', () => {
   let app: Express;
   let mongoClient: MongoClient;

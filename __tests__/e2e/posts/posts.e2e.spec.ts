@@ -8,9 +8,6 @@ import { PostInputDto } from '../../../src/features/posts/dto/postInputDto';
 import { bootstrap } from '../../../src';
 import { SETTINGS } from '../../../src/core/settings';
 
-// Увеличиваем таймаут для тестов до 10 секунд
-jest.setTimeout(10000);
-
 describe('Post API', () => {
   let app: Express;
   let mongoClient: MongoClient;
