@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      dotenv:
+        specifier: ^16.5.0
+        version: 16.5.0
       express-validator:
         specifier: ^7.2.1
         version: 7.2.1
@@ -33,9 +36,6 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.33.0
         version: 8.33.0(eslint@9.27.0)(typescript@5.8.3)
-      dotenv:
-        specifier: ^16.5.0
-        version: 16.5.0
       eslint:
         specifier: ^9.27.0
         version: 9.27.0
