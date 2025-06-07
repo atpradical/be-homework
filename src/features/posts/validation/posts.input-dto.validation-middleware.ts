@@ -34,7 +34,9 @@ export const blogIdValidation = body('blogId')
   .withMessage('must be a string')
   .trim()
   .isLength({ min: 1 })
-  .withMessage('length is not correct');
+  .withMessage('length is not correct')
+  .isMongoId()
+  .withMessage('Incorrect format of ObjectId'); // Проверка на формат ObjectId
 
 export const postsInputValidation = [
   titleValidation,

@@ -160,7 +160,7 @@ describe('Post Validation Middleware', () => {
       );
 
       const errors = validationResult(req);
-      expect(errors.array()).toHaveLength(4); // All fields should have errors
+      expect(errors.array()).toHaveLength(5); // All fields should have errors
     });
   });
 });

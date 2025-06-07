@@ -3,22 +3,23 @@ import { HttpStatus } from '../../../../core';
 import { PostInputDto } from '../../dto/postInputDto';
 import { postsRepository } from '../../repositories/posts.repository';
 
-export const updatePostHandler = (
+export async function updatePostHandler(
   req: Request<{ id: string }, {}, PostInputDto>,
   res: Response,
-) => {
+) {
   const id = req.params.id;
-  //TODO: валидация на body если есть ошибки отправка ошибки
 
-  const post = postsRepository.findById(id);
+  try {
+    const foundPost = await postsRepository.findById(id);
 
-  if (!post) {
-    //TODO: отправлять правильный формат ошибки filed и message
-    res.sendStatus(HttpStatus.NotFound);
-    return;
+    if (!foundPost) {
+      res.sendStatus(HttpStatus.NotFound);
+      return;
+    }
+
+    await postsRepository.update(id, req.body);
+    res.sendStatus(HttpStatus.NoContent);
+  } catch (e: unknown) {
+    res.sendStatus(HttpStatus.InternalServerError);
   }
-
-  //TODO:добавить репозиторий и делать обновление там.
-  postsRepository.update(id, req.body);
-  res.sendStatus(HttpStatus.NoContent);
-};
+}
