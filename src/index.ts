@@ -3,7 +3,7 @@ import { setupApp } from './setup-app';
 import { runDB } from './db/mongo.db';
 import { SETTINGS } from './core/settings';
 
-export const bootstrap = async () => {
+const bootstrap = async () => {
   const app = express();
   setupApp(app);
   const PORT = SETTINGS.PORT;
@@ -17,3 +17,5 @@ export const bootstrap = async () => {
 };
 
 bootstrap();
+
+export default bootstrap;
