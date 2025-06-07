@@ -17,5 +17,3 @@ const bootstrap = async () => {
 };
 
 bootstrap();
-
-export default bootstrap;
