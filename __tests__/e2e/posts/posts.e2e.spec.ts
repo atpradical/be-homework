@@ -1,12 +1,13 @@
 import request from 'supertest';
-import { Express } from 'express';
+import express, { Express } from 'express';
 import { MongoClient, ObjectId } from 'mongodb';
 import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
 import { BlogInputDto } from '../../../src/features/blogs/dto/blogInputDto';
 import { BLOGS_PATH, HttpStatus, POSTS_PATH } from '../../../src/core';
 import { PostInputDto } from '../../../src/features/posts/dto/postInputDto';
-import { bootstrap } from '../../../src';
 import { SETTINGS } from '../../../src/core/settings';
+import { setupApp } from '../../../src/setup-app';
+import { runDB } from '../../../src/db/mongo.db';
 
 describe('Post API', () => {
   let app: Express;
@@ -28,7 +29,11 @@ describe('Post API', () => {
 
   beforeAll(async () => {
     // Initialize the app and get the Express instance
-    app = await bootstrap();
+    app = express();
+    setupApp(app);
+    const PORT = SETTINGS.PORT;
+
+    await runDB(SETTINGS.MONGO_URL);
 
     // Connect to the test database
     mongoClient = new MongoClient(SETTINGS.MONGO_URL);
