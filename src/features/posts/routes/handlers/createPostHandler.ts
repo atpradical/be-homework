@@ -1,35 +1,37 @@
 import { Request, Response } from 'express';
-import { db } from '../../../../db/in-memory.db';
 import { HttpStatus } from '../../../../core';
 import { postsRepository } from '../../repositories/posts.repository';
 import { PostInputDto } from '../../dto/postInputDto';
 import { blogsRepository } from '../../../blogs/repositories/blogs.repository';
+import { mapToPostViewModel } from '../../mappers/map-to-post-view-model';
 
-export const createPostHandler = (
+export async function createPostHandler(
   req: Request<{}, {}, PostInputDto>,
   res: Response,
-) => {
-  //TODO: валидация на body если есть ошибки отправка ошибки
+) {
   const body = req.body;
-  const blog = blogsRepository.findById(req.body.blogId);
 
-  if (!blog) {
-    res.sendStatus(HttpStatus.NotFound);
-    return;
+  try {
+    const blog = await blogsRepository.findById(req.body.blogId);
+
+    if (!blog) {
+      res.sendStatus(HttpStatus.NotFound);
+      return;
+    }
+
+    const newPost = {
+      title: body.title,
+      shortDescription: body.shortDescription,
+      content: body.content,
+      blogId: body.blogId,
+      blogName: blog?.name,
+      createdAt: new Date(),
+    };
+
+    const createdPost = await postsRepository.create(newPost);
+    const postViewModel = mapToPostViewModel(createdPost);
+    res.status(HttpStatus.Created).send(postViewModel);
+  } catch (e) {
+    res.sendStatus(HttpStatus.InternalServerError);
   }
-
-  //TODO:добавить репозиторий и делать обновление там.
-  const newPost = {
-    id: db.posts.length
-      ? String(parseInt(db.posts[db.posts.length - 1].id) + 1)
-      : '1',
-    title: body.title,
-    shortDescription: body.shortDescription,
-    content: body.content,
-    blogId: body.blogId,
-    blogName: blog?.name,
-  };
-
-  postsRepository.create(newPost);
-  res.status(HttpStatus.Created).send(newPost);
-};
+}

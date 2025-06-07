@@ -1,24 +1,29 @@
 import { Request, Response } from 'express';
-import { db } from '../../../../db/in-memory.db';
 import { HttpStatus } from '../../../../core';
 import { BlogInputDto } from '../../dto/blogInputDto';
 import { blogsRepository } from '../../repositories/blogs.repository';
+import { Blog } from '../../types';
+import { mapToBlogViewModel } from '../mappers/map-to-blog-view-model';
 
-export const createBlogHandler = (
+export async function createBlogHandler(
   req: Request<{}, {}, BlogInputDto>,
   res: Response,
-) => {
+) {
   const body = req.body;
 
-  const newBlog = {
-    id: db.blogs.length
-      ? String(parseInt(db.blogs[db.blogs.length - 1].id) + 1)
-      : '1',
+  const newBlog: Blog = {
     name: body.name,
     description: body.description,
     websiteUrl: body.websiteUrl,
+    isMembership: false,
+    createdAt: new Date(), // TODO: вопрос про { $createdAt: true }
   };
 
-  blogsRepository.create(newBlog);
-  res.status(HttpStatus.Created).send(newBlog);
-};
+  try {
+    const createdBlog = await blogsRepository.create(newBlog);
+    const blogViewModel = mapToBlogViewModel(createdBlog);
+    res.status(HttpStatus.Created).send(blogViewModel);
+  } catch (e) {
+    res.sendStatus(HttpStatus.InternalServerError);
+  }
+}

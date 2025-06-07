@@ -1,11 +1,15 @@
-import { Router, Request, Response } from 'express';
-import { db } from '../../../db/in-memory.db';
+import { Request, Response, Router } from 'express';
 import { HttpStatus } from '../../../core';
+import { blogsCollection, postsCollection } from '../../../db/mongo.db';
 
 export const testingRouter = Router({});
 
-testingRouter.delete('/all-data', (reg: Request, res: Response) => {
-  db.blogs = [];
-  db.posts = [];
-  res.sendStatus(HttpStatus.NoContent);
+testingRouter.delete('/all-data', async (reg: Request, res: Response) => {
+  try {
+    await blogsCollection.deleteMany({});
+    await postsCollection.deleteMany({});
+    res.status(HttpStatus.NoContent).send('All data is deleted');
+  } catch (e: unknown) {
+    res.sendStatus(HttpStatus.InternalServerError);
+  }
 });
