@@ -76,11 +76,11 @@ describe('Blogs API', () => {
       .expect(HttpStatus.Ok);
 
     // Verify response
-    expect(blogsListResponse.body).toBeInstanceOf(Array);
-    expect(blogsListResponse.body).toHaveLength(2);
+    expect(blogsListResponse.body).toBeInstanceOf(Object);
+    expect(blogsListResponse.body.items).toHaveLength(2);
 
     // Verify blog items structure
-    blogsListResponse.body.forEach((blog: any) => {
+    blogsListResponse.body.items.forEach((blog: any) => {
       expect(blog).toMatchObject({
         id: expect.any(String),
         name: expect.any(String),
@@ -93,6 +93,129 @@ describe('Blogs API', () => {
       // Verify the ID is a valid MongoDB ObjectId
       expect(ObjectId.isValid(blog.id)).toBe(true);
     });
+  });
+
+  it('✅ should return paginated blogs with default values; GET /api/blogs', async () => {
+    // Clear any existing data
+    await request(app).delete('/testing/all-data').expect(204);
+
+    // Create 15 test blogs
+    const testBlogs: BlogInputDto[] = Array.from({ length: 15 }, (_, i) => ({
+      name: `Test Blog ${i + 1}`,
+      description: `Description ${i + 1}`,
+      websiteUrl: `https://test-blog-${i + 1}.com`,
+    }));
+
+    await Promise.all(
+      testBlogs.map((blog) =>
+        request(app)
+          .post(BLOGS_PATH)
+          .set('Authorization', adminToken)
+          .send(blog)
+          .expect(HttpStatus.Created),
+      ),
+    );
+
+    // Get first page with default pagination (pageSize=10, pageNumber=1)
+    const firstPageResponse = await request(app)
+      .get(BLOGS_PATH)
+      .set('Authorization', adminToken)
+      .expect(HttpStatus.Ok);
+
+    // Verify pagination metadata
+    expect(firstPageResponse.body).toMatchObject({
+      pageCount: 2,
+      page: 1,
+      pageSize: 10,
+      totalCount: 15,
+      items: expect.any(Array),
+    });
+
+    // Verify we got 10 items on the first page
+    expect(firstPageResponse.body.items).toHaveLength(10);
+
+    // Get the second page
+    const secondPageResponse = await request(app)
+      .get(`${BLOGS_PATH}?pageNumber=2&pageSize=10`)
+      .set('Authorization', adminToken)
+      .expect(HttpStatus.Ok);
+
+    // Verify pagination metadata for the second page
+    expect(secondPageResponse.body).toMatchObject({
+      pageCount: 2,
+      page: 2,
+      pageSize: 10,
+      totalCount: 15,
+      items: expect.any(Array),
+    });
+
+    // Verify we got 5 items on the second page
+    expect(secondPageResponse.body.items).toHaveLength(5);
+
+    // Verify items on the first and second pages don't overlap
+    const firstPageIds = firstPageResponse.body.items.map(
+      (item: any) => item.id,
+    );
+    const secondPageIds = secondPageResponse.body.items.map(
+      (item: any) => item.id,
+    );
+
+    const commonIds = firstPageIds.filter((id: string) =>
+      secondPageIds.includes(id),
+    );
+    expect(commonIds).toHaveLength(0);
+  });
+
+  it('✅ should return sorted blogs; GET /api/blogs', async () => {
+    // Clear any existing data
+    await request(app).delete('/testing/all-data').expect(204);
+
+    // Create test blogs with different creation dates
+    const testBlogs = [
+      { name: 'Blog A', createdAt: new Date('2023-01-03').toISOString() },
+      { name: 'Blog C', createdAt: new Date('2023-01-01').toISOString() },
+      { name: 'Blog B', createdAt: new Date('2023-01-02').toISOString() },
+    ];
+
+    // Create blogs
+    await Promise.all(
+      testBlogs.map((blog) =>
+        request(app)
+          .post(BLOGS_PATH)
+          .set('Authorization', adminToken)
+          .send({
+            name: blog.name,
+            description: 'Test description',
+            websiteUrl: 'https://test.com',
+          })
+          .expect(HttpStatus.Created),
+      ),
+    );
+
+    // Get blogs sorted by name in ascending order
+    const sortedResponse = await request(app)
+      .get(`${BLOGS_PATH}?sortBy=name&sortDirection=asc`)
+      .set('Authorization', adminToken)
+      .expect(HttpStatus.Ok);
+
+    // Verify sorting by name
+    const blogNames = sortedResponse.body.items.map((blog: any) => blog.name);
+    expect(blogNames).toEqual(['Blog A', 'Blog B', 'Blog C']);
+
+    // Get blogs sorted by creation date in descending order (default)
+    const dateSortedResponse = await request(app)
+      .get(`${BLOGS_PATH}?sortBy=createdAt&sortDirection=desc`)
+      .set('Authorization', adminToken)
+      .expect(HttpStatus.Ok);
+
+    // Verify sorting by creation date
+    const createdAtDates = dateSortedResponse.body.items.map(
+      (blog: any) => blog.createdAt,
+    );
+    const sortedDates = [...createdAtDates].sort(
+      (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+    );
+    expect(createdAtDates).toEqual(sortedDates);
   });
 
   it('✅ should return blog by id; GET /api/blogs/:id', async () => {

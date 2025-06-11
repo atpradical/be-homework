@@ -9,3 +9,13 @@ export const idValidation = param('id')
   .withMessage('ID must not be empty') // Проверка, что строка не пустая
   .isMongoId()
   .withMessage('Incorrect format of ObjectId'); // Проверка на формат ObjectId
+
+export const blogIdValidation = param('blogId')
+  .exists()
+  .withMessage('blogId is required') // Проверка на наличие
+  .isString()
+  .withMessage('blogId must be a string') // Проверка, что это строка
+  .isLength({ min: 1 })
+  .withMessage('blogId must not be empty') // Проверка, что строка не пустая
+  .isMongoId()
+  .withMessage('Incorrect format of ObjectId'); // Проверка на формат ObjectId
