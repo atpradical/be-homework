@@ -16,7 +16,10 @@ import { blogsInputValidation } from './blogs.input-dto.validation-middleware';
 import { superAdminGuardMiddleware } from '../../../auth/super-admin.guard-middleware';
 import { BlogSortField } from './input/blog-sort-field';
 import { getPostListByBlogIdHandler } from './handlers/get-post-list-by-blog-id.handler';
-import { postsInputValidation } from '../../posts/routes/posts.input-dto.validation-middleware';
+import {
+  postForBlogInputValidation,
+  postsInputValidation,
+} from '../../posts/routes/posts.input-dto.validation-middleware';
 import { createPostHandler } from '../../posts/routes/handlers';
 
 export const blogsRouter = Router({});
@@ -67,8 +70,8 @@ blogsRouter
   .post(
     '/:blogId/posts',
     superAdminGuardMiddleware,
-    postsInputValidation,
     blogIdValidation,
+    postForBlogInputValidation,
     inputValidationResultMiddleware,
     createPostHandler,
   );
