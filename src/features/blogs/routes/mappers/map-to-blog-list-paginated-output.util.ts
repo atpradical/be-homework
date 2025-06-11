@@ -9,7 +9,7 @@ export function mapToBlogListPaginatedOutput(
   return {
     page: pagination.pageNumber,
     pageSize: pagination.pageSize,
-    pageCount: Math.ceil(pagination.totalCount / pagination.pageSize),
+    pagesCount: Math.ceil(pagination.totalCount / pagination.pageSize),
     totalCount: pagination.totalCount,
 
     items: blogs.map((blog: WithId<Blog>) => ({
