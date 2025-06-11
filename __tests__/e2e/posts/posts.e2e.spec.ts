@@ -98,11 +98,11 @@ describe('Post API', () => {
       .expect(HttpStatus.Ok);
 
     // Verify response
-    expect(postsListResponse.body).toBeInstanceOf(Array);
-    expect(postsListResponse.body).toHaveLength(3);
+    expect(postsListResponse.body).toBeInstanceOf(Object);
+    expect(postsListResponse.body.items).toHaveLength(3);
 
     // Verify post items structure
-    postsListResponse.body.forEach((post: any) => {
+    postsListResponse.body.items.forEach((post: any) => {
       expect(post).toMatchObject({
         id: expect.any(String),
         title: expect.any(String),

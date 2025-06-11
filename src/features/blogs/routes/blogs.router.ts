@@ -6,14 +6,29 @@ import {
   getBlogListHandler,
   updateBlogHandler,
 } from './handlers';
-import { idValidation, inputValidationResultMiddleware } from '../../../core';
-import { blogsInputValidation } from '../validation/blogs.input-dto.validation-middleware';
+import {
+  blogIdValidation,
+  idValidation,
+  inputValidationResultMiddleware,
+  paginationAndSortingValidation,
+} from '../../../core';
+import { blogsInputValidation } from './blogs.input-dto.validation-middleware';
 import { superAdminGuardMiddleware } from '../../../auth/super-admin.guard-middleware';
+import { BlogSortField } from './input/blog-sort-field';
+import { getPostListByBlogIdHandler } from './handlers/get-post-list-by-blog-id.handler';
+import { postsInputValidation } from '../../posts/routes/posts.input-dto.validation-middleware';
+import { createPostHandler } from '../../posts/routes/handlers';
 
 export const blogsRouter = Router({});
 
 blogsRouter
-  .get('/', getBlogListHandler)
+  //todo: добавить пагинацию и параметры сортировки
+  .get(
+    '/',
+    paginationAndSortingValidation(BlogSortField),
+    inputValidationResultMiddleware,
+    getBlogListHandler,
+  )
 
   .post(
     '/',
@@ -40,4 +55,20 @@ blogsRouter
     idValidation,
     inputValidationResultMiddleware,
     deleteBlogHandler,
+  )
+
+  .get(
+    '/:blogId/posts',
+    blogIdValidation,
+    inputValidationResultMiddleware,
+    getPostListByBlogIdHandler,
+  )
+
+  .post(
+    '/:blogId/posts',
+    superAdminGuardMiddleware,
+    postsInputValidation,
+    blogIdValidation,
+    inputValidationResultMiddleware,
+    createPostHandler,
   );

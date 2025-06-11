@@ -1,25 +1,20 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '../../../../core';
 import { PostInputDto } from '../../dto/postInputDto';
-import { postsRepository } from '../../repositories/posts.repository';
+import { errorsHandler } from '../../../../core/errors/errors.handler';
+import { postsService } from '../../application/posts.service';
 
 export async function updatePostHandler(
   req: Request<{ id: string }, {}, PostInputDto>,
   res: Response,
 ) {
-  const id = req.params.id;
-
   try {
-    const foundPost = await postsRepository.findById(id);
+    const id = req.params.id;
 
-    if (!foundPost) {
-      res.sendStatus(HttpStatus.NotFound);
-      return;
-    }
+    await postsService.update(id, req.body);
 
-    await postsRepository.update(id, req.body);
     res.sendStatus(HttpStatus.NoContent);
   } catch (e: unknown) {
-    res.sendStatus(HttpStatus.InternalServerError);
+    errorsHandler(e, res);
   }
 }

@@ -6,14 +6,24 @@ import {
   getPostListHandler,
   updatePostHandler,
 } from './handlers';
-import { idValidation, inputValidationResultMiddleware } from '../../../core';
-import { postsInputValidation } from '../validation/posts.input-dto.validation-middleware';
+import {
+  idValidation,
+  inputValidationResultMiddleware,
+  paginationAndSortingValidation,
+} from '../../../core';
+import { postsInputValidation } from './posts.input-dto.validation-middleware';
 import { superAdminGuardMiddleware } from '../../../auth/super-admin.guard-middleware';
+import { PostSortField } from './input/post-sort-field';
 
 export const postsRouter = Router({});
 
 postsRouter
-  .get('/', getPostListHandler)
+  .get(
+    '/',
+    paginationAndSortingValidation(PostSortField),
+    inputValidationResultMiddleware,
+    getPostListHandler,
+  )
 
   .post(
     '/',

@@ -1,10 +1,10 @@
 import { validationResult } from 'express-validator';
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../../enums';
-import { formatErrors } from '../../utils/error.utils';
+import { formatErrors } from '../../helpers/error.utils';
 
 export const inputValidationResultMiddleware = (
-  req: Request,
+  req: Request<{}, {}, {}, {}>,
   res: Response,
   next: NextFunction,
 ) => {
@@ -16,6 +16,5 @@ export const inputValidationResultMiddleware = (
     res.status(HttpStatus.BadRequest).json({ errorsMessages: errors });
     return;
   }
-
   next();
 };
