@@ -5,7 +5,7 @@ import { setDefaultSortAndPaginationIfNotExist } from '../../../../core/helpers/
 import { PaginationAndSorting } from '../../../../core/types/pagination-and-sorting';
 import { PostSortField } from '../../../posts/routes/input/post-sort-field';
 import { postsService } from '../../../posts/application/posts.service';
-import { mapToPostListPaginatedOutput } from '../../../posts/mappers/map-to-post-list-paginated-output.util';
+import { mapToPostForBlogListPaginatedOutput } from '../../../posts/mappers/map-to-post-list-paginated-output.util';
 
 export async function getPostListByBlogIdHandler(
   req: Request<{ blogId: string }, {}, {}, PaginationAndSorting<PostSortField>>,
@@ -20,7 +20,7 @@ export async function getPostListByBlogIdHandler(
       queryInput,
     );
 
-    const postListOutput = mapToPostListPaginatedOutput(items, {
+    const postListOutput = mapToPostForBlogListPaginatedOutput(items, {
       pageNumber: queryInput.pageNumber,
       pageSize: queryInput.pageSize,
       totalCount,
