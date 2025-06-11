@@ -21,6 +21,7 @@ import {
   postsInputValidation,
 } from '../../posts/routes/posts.input-dto.validation-middleware';
 import { createPostHandler } from '../../posts/routes/handlers';
+import { createPostForBlogHandler } from '../../posts/routes/handlers/create-post-for-blog.handler';
 
 export const blogsRouter = Router({});
 
@@ -73,5 +74,5 @@ blogsRouter
     blogIdValidation,
     postForBlogInputValidation,
     inputValidationResultMiddleware,
-    createPostHandler,
+    createPostForBlogHandler,
   );

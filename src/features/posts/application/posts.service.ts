@@ -55,4 +55,26 @@ export const postsService = {
 
     return postsRepository.findPostsByBlog(blogId, queryDto);
   },
+
+  async createPostForBlog(
+    blogId: string,
+    dto: Omit<PostInputDto, 'blogId'>,
+  ): Promise<WithId<Post>> {
+    const blog = await blogsService.findById(blogId);
+
+    if (!blog) {
+      throw new RepositoryNotFoundError('Blog not exist');
+    }
+
+    const newPost = {
+      title: dto.title,
+      shortDescription: dto.shortDescription,
+      content: dto.content,
+      blogId: blogId,
+      blogName: blog?.name,
+      createdAt: new Date(),
+    };
+
+    return postsRepository.create(newPost);
+  },
 };
