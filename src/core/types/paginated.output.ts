@@ -4,3 +4,8 @@ export type PaginatedOutput = {
   pageCount: number;
   totalCount: number;
 };
+
+export type PaginatedOutputWithPagesCount = { pagesCount: number } & Pick<
+  PaginatedOutput,
+  'pageSize' | 'page' | 'totalCount'
+>;
