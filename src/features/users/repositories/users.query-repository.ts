@@ -1,7 +1,6 @@
 import { User } from '../types';
 import { ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../db/mongo.db';
-import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 import { UserQueryInput } from '../routes/input/user-query.input';
 
 export const usersQueryRepository = {
@@ -19,24 +18,28 @@ export const usersQueryRepository = {
 
     const skip = (pageNumber - 1) * pageSize;
 
-    const filter: any = {};
+    const query: any = {};
+
+    if (searchLoginTerm || searchEmailTerm) {
+      query['$or'] = [];
+    }
 
     if (searchLoginTerm) {
-      filter.login = { $regex: searchLoginTerm, $options: 'i' };
+      query['$or'].push({ $regex: searchLoginTerm, $options: 'i' });
     }
 
     if (searchEmailTerm) {
-      filter.email = { $regex: searchEmailTerm, $options: 'i' };
+      query['$or'].push({ $regex: searchEmailTerm, $options: 'i' });
     }
 
     const items = await usersCollection
-      .find(filter)
+      .find(query)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
       .toArray();
 
-    const totalCount = await usersCollection.countDocuments(filter);
+    const totalCount = await usersCollection.countDocuments(query);
 
     return { items, totalCount };
   },
@@ -57,7 +60,7 @@ export const usersQueryRepository = {
     loginOrEmail: string,
   ): Promise<WithId<User> | null> {
     return await usersCollection.findOne({
-      $or: [{ login: loginOrEmail, email: loginOrEmail }],
+      $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
     });
   },
 };
