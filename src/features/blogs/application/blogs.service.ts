@@ -3,16 +3,17 @@ import { Blog } from '../types';
 import { BlogInputDto } from '../dto/blogInputDto';
 import { blogsRepository } from '../repositories/blogs.repository';
 import { BlogQueryInput } from '../routes/input/blog-query.input';
+import { blogsQueryRepository } from '../repositories/blogs.query-repository';
 
 export const blogsService = {
   async findAll(
     queryDto: BlogQueryInput,
   ): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
-    return blogsRepository.findAll(queryDto);
+    return blogsQueryRepository.findAll(queryDto);
   },
 
   async findById(id: string): Promise<WithId<Blog>> {
-    return blogsRepository.findById(id);
+    return blogsQueryRepository.findById(id);
   },
 
   async create(dto: BlogInputDto): Promise<WithId<Blog>> {

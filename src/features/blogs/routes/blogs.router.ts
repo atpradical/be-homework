@@ -16,11 +16,7 @@ import { blogsInputValidation } from './blogs.input-dto.validation-middleware';
 import { superAdminGuardMiddleware } from '../../../auth/super-admin.guard-middleware';
 import { BlogSortField } from './input/blog-sort-field';
 import { getPostListByBlogIdHandler } from './handlers/get-post-list-by-blog-id.handler';
-import {
-  postForBlogInputValidation,
-  postsInputValidation,
-} from '../../posts/routes/posts.input-dto.validation-middleware';
-import { createPostHandler } from '../../posts/routes/handlers';
+import { postForBlogInputValidation } from '../../posts/routes/posts.input-dto.validation-middleware';
 import { createPostForBlogHandler } from '../../posts/routes/handlers/create-post-for-blog.handler';
 
 export const blogsRouter = Router({});
