@@ -18,28 +18,32 @@ export const usersQueryRepository = {
 
     const skip = (pageNumber - 1) * pageSize;
 
-    const query: any = {};
+    const filter: any = {};
 
     if (searchLoginTerm || searchEmailTerm) {
-      query['$or'] = [];
+      filter['$or'] = [];
     }
 
     if (searchLoginTerm) {
-      query['$or'].push({ $regex: searchLoginTerm, $options: 'i' });
+      filter['$or'].push({
+        login: { $regex: searchLoginTerm, $options: 'i' },
+      });
     }
 
     if (searchEmailTerm) {
-      query['$or'].push({ $regex: searchEmailTerm, $options: 'i' });
+      filter['$or'].push({
+        email: { $regex: searchEmailTerm, $options: 'i' },
+      });
     }
 
     const items = await usersCollection
-      .find(query)
+      .find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
       .toArray();
 
-    const totalCount = await usersCollection.countDocuments(query);
+    const totalCount = await usersCollection.countDocuments(filter);
 
     return { items, totalCount };
   },
