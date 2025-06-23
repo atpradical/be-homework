@@ -22,11 +22,11 @@ export const usersQueryRepository = {
     const filter: any = {};
 
     if (searchLoginTerm) {
-      filter.login = { $regex: searchLoginTerm, $option: 'i' };
+      filter.login = { $regex: searchLoginTerm, $options: 'i' };
     }
 
     if (searchEmailTerm) {
-      filter.login = { $regex: searchEmailTerm, $option: 'i' };
+      filter.email = { $regex: searchEmailTerm, $options: 'i' };
     }
 
     const items = await usersCollection
