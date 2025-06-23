@@ -19,24 +19,29 @@ export const usersQueryRepository = {
 
     const skip = (pageNumber - 1) * pageSize;
 
-    const filter: any = {};
+    const query: any = {};
+
+    if (searchLoginTerm || searchEmailTerm) {
+      query['$or'] = [];
+    }
 
     if (searchLoginTerm) {
-      filter.login = { $regex: searchLoginTerm, $options: 'i' };
+      query['$or'].push({ $regex: searchLoginTerm, $options: 'i' });
     }
 
     if (searchEmailTerm) {
-      filter.email = { $regex: searchEmailTerm, $options: 'i' };
+      query['$or'].push({ $regex: searchEmailTerm, $options: 'i' });
     }
 
     const items = await usersCollection
-      .find(filter)
+      // .find(filter)
+      .find(query)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
       .toArray();
 
-    const totalCount = await usersCollection.countDocuments(filter);
+    const totalCount = await usersCollection.countDocuments(query);
 
     return { items, totalCount };
   },
@@ -56,8 +61,10 @@ export const usersQueryRepository = {
   async findUserByLoginOrEmail(
     loginOrEmail: string,
   ): Promise<WithId<User> | null> {
+    console.log('loginOrEmail is', loginOrEmail);
+
     return await usersCollection.findOne({
-      $or: [{ login: loginOrEmail, email: loginOrEmail }],
+      $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
     });
   },
 };
