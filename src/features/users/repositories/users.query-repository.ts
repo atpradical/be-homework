@@ -1,7 +1,6 @@
 import { User } from '../types';
 import { ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../db/mongo.db';
-import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 import { UserQueryInput } from '../routes/input/user-query.input';
 
 export const usersQueryRepository = {
@@ -34,7 +33,6 @@ export const usersQueryRepository = {
     }
 
     const items = await usersCollection
-      // .find(filter)
       .find(query)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
@@ -61,8 +59,6 @@ export const usersQueryRepository = {
   async findUserByLoginOrEmail(
     loginOrEmail: string,
   ): Promise<WithId<User> | null> {
-    console.log('loginOrEmail is', loginOrEmail);
-
     return await usersCollection.findOne({
       $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
     });
