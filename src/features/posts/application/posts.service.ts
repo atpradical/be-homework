@@ -6,16 +6,18 @@ import { blogsService } from '../../blogs/application/blogs.service';
 import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 import { PostQueryInput } from '../routes/input/post-query.input';
 import { blogsRepository } from '../../blogs/repositories/blogs.repository';
+import { postsQueryRepository } from '../repositories/posts.query-repository';
+import { blogsQueryRepository } from '../../blogs/repositories/blogs.query-repository';
 
 export const postsService = {
   async findAll(
     queryDto: PostQueryInput,
   ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
-    return postsRepository.findAll(queryDto);
+    return postsQueryRepository.findAll(queryDto);
   },
 
   async findById(id: string): Promise<WithId<Post>> {
-    return postsRepository.findById(id);
+    return postsQueryRepository.findById(id);
   },
 
   async create(dto: PostInputDto): Promise<WithId<Post>> {
@@ -51,9 +53,9 @@ export const postsService = {
     blogId: string,
     queryDto: PostQueryInput,
   ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
-    await blogsRepository.findById(blogId);
+    await blogsService.findById(blogId);
 
-    return postsRepository.findPostsByBlog(blogId, queryDto);
+    return postsQueryRepository.findPostsByBlog(blogId, queryDto);
   },
 
   async createPostForBlog(

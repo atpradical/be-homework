@@ -124,7 +124,7 @@ describe('Blogs API', () => {
 
     // Verify pagination metadata
     expect(firstPageResponse.body).toMatchObject({
-      pageCount: 2,
+      pagesCount: 2,
       page: 1,
       pageSize: 10,
       totalCount: 15,
@@ -142,7 +142,7 @@ describe('Blogs API', () => {
 
     // Verify pagination metadata for the second page
     expect(secondPageResponse.body).toMatchObject({
-      pageCount: 2,
+      pagesCount: 2,
       page: 2,
       pageSize: 10,
       totalCount: 15,
