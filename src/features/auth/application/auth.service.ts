@@ -4,7 +4,9 @@ import { compare } from 'bcrypt';
 
 export const authService = {
   async login(dto: AuthInputDto): Promise<boolean> {
-    const user = await usersQueryRepository.findUserByLogin(dto.login);
+    const user = await usersQueryRepository.findUserByLoginOrEmail(
+      dto.loginOrEmail,
+    );
 
     if (!user) {
       return false;

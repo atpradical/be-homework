@@ -52,4 +52,12 @@ export const usersQueryRepository = {
   async findUserByLogin(login: string): Promise<WithId<User> | null> {
     return await usersCollection.findOne({ login });
   },
+
+  async findUserByLoginOrEmail(
+    loginOrEmail: string,
+  ): Promise<WithId<User> | null> {
+    return await usersCollection.findOne({
+      $or: [{ login: loginOrEmail, email: loginOrEmail }],
+    });
+  },
 };
