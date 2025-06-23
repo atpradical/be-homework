@@ -5,7 +5,7 @@ import { usersRepository } from '../repositories/users.repository';
 import { UserInputDto } from '../dto/userInputDto';
 import { usersQueryRepository } from '../repositories/users.query-repository';
 import { DomainError } from '../../../core/errors/domain.error';
-import { hash, compare } from 'bcrypt';
+import { hash } from 'bcrypt';
 
 export const usersService = {
   async findAll(

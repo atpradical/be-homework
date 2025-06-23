@@ -7,7 +7,7 @@ export const authRouter = Router({});
 
 authRouter.post(
   '/login',
-  authInputValidation,
+  // authInputValidation,
   inputValidationResultMiddleware,
   loginHandler,
 );
