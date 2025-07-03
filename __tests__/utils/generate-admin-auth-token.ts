@@ -1,7 +1,7 @@
 import {
   ADMIN_PASSWORD,
   ADMIN_USERNAME,
-} from '../../src/auth/super-admin.guard-middleware';
+} from '../../src/features/auth/api/guards/super-admin.guard';
 
 /*
  * Генерирует <Basiс base64_токен> из admin:qwerty

@@ -3,10 +3,10 @@ import express, { Express } from 'express';
 import { MongoClient } from 'mongodb';
 import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
 import { BLOGS_PATH, HttpStatus, USERS_PATH } from '../../../src/core';
-import { SETTINGS } from '../../../src/core/settings';
+import { appConfig } from '../../../src/core/config';
 import { setupApp } from '../../../src/setup-app';
 import { runDB } from '../../../src/db/mongo.db';
-import { UserInputDto } from '../../../src/features/users/dto/userInputDto';
+import { UserInputDto } from '../../../src/features/users/types/user-input.dto';
 
 describe('Users API', () => {
   let app: Express;
@@ -16,12 +16,12 @@ describe('Users API', () => {
     // Initialize the app and get the Express instance
     app = express();
     setupApp(app);
-    const PORT = SETTINGS.PORT;
+    const PORT = appConfig.PORT;
 
-    await runDB(SETTINGS.MONGO_URL);
+    await runDB(appConfig.MONGO_URL);
 
     // Connect to the test database
-    mongoClient = new MongoClient(SETTINGS.MONGO_URL);
+    mongoClient = new MongoClient(appConfig.MONGO_URL);
     await mongoClient.connect();
 
     // Clear the database before tests
@@ -71,9 +71,7 @@ describe('Users API', () => {
       .expect(HttpStatus.Created);
 
     // Get all users
-    const usersListResponse = await request(app)
-      .get(USERS_PATH)
-      .expect(HttpStatus.Ok);
+    const usersListResponse = await request(app).get(USERS_PATH).expect(HttpStatus.Ok);
 
     // Verify response
     expect(usersListResponse.body).toBeInstanceOf(Object);
@@ -117,9 +115,7 @@ describe('Users API', () => {
     );
 
     // Get first page with default pagination (pageSize=10, pageNumber=1)
-    const firstPageResponse = await request(app)
-      .get(USERS_PATH)
-      .expect(HttpStatus.Ok);
+    const firstPageResponse = await request(app).get(USERS_PATH).expect(HttpStatus.Ok);
 
     // Verify pagination metadata
     expect(firstPageResponse.body).toMatchObject({
@@ -171,9 +167,7 @@ describe('Users API', () => {
       .expect(HttpStatus.NoContent);
 
     // Verify the blog no longer exists
-    const userResponse = await request(app).get(
-      `${BLOGS_PATH}/${createdUserId}`,
-    );
+    const userResponse = await request(app).get(`${BLOGS_PATH}/${createdUserId}`);
 
     expect(userResponse.status).toBe(HttpStatus.NotFound);
   });

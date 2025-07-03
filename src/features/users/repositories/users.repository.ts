@@ -2,20 +2,12 @@ import { User } from '../types';
 import { ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
-import { UserQueryInput } from '../routes/input/user-query.input';
+import { UserQueryInput } from '../types/user-query.input';
 
 export const usersRepository = {
-  async findAll(
-    queryDto: UserQueryInput,
-  ): Promise<{ items: WithId<User>[]; totalCount: number }> {
-    const {
-      searchEmailTerm,
-      searchLoginTerm,
-      sortBy,
-      sortDirection,
-      pageNumber,
-      pageSize,
-    } = queryDto;
+  async findAll(queryDto: UserQueryInput): Promise<{ items: WithId<User>[]; totalCount: number }> {
+    const { searchEmailTerm, searchLoginTerm, sortBy, sortDirection, pageNumber, pageSize } =
+      queryDto;
 
     const skip = (pageNumber - 1) * pageSize;
 

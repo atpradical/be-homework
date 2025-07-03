@@ -1,14 +1,10 @@
-import { PostInputDto } from '../dto/postInputDto';
 import { Post } from '../types';
 import { postsCollection } from '../../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
-import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
-import { PostQueryInput } from '../routes/input/post-query.input';
+import { PostQueryInput } from '../types/post-query.input';
 
 export const postsQueryRepository = {
-  async findAll(
-    queryDto: PostQueryInput,
-  ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+  async findAll(queryDto: PostQueryInput): Promise<{ items: WithId<Post>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
 
     const skip = (pageNumber - 1) * pageSize;
@@ -25,14 +21,8 @@ export const postsQueryRepository = {
     return { items, totalCount };
   },
 
-  async findById(id: string): Promise<WithId<Post>> {
-    const post = await postsCollection.findOne({ _id: new ObjectId(id) });
-
-    if (!post) {
-      throw new RepositoryNotFoundError('Blog not exist');
-    }
-
-    return post;
+  async findById(id: string): Promise<WithId<Post> | null> {
+    return postsCollection.findOne({ _id: new ObjectId(id) });
   },
 
   async findPostsByBlog(

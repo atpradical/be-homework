@@ -6,7 +6,7 @@ import {
   postsInputValidation,
   shortDescriptionValidation,
   titleValidation,
-} from '../../../../../src/features/posts/routes/posts.input-dto.validation-middleware';
+} from '../../../../../src/features/posts/api/middleware/posts.input-dto.validation';
 
 // Mock Express request/response objects
 const mockRequest = (body: any = {}) => ({
@@ -138,9 +138,7 @@ describe('Post Validation Middleware', () => {
       });
 
       // Run all validations
-      await Promise.all(
-        postsInputValidation.map((validation) => validation.run(req)),
-      );
+      await Promise.all(postsInputValidation.map((validation) => validation.run(req)));
 
       const errors = validationResult(req);
       expect(errors.isEmpty()).toBe(true);
@@ -155,9 +153,7 @@ describe('Post Validation Middleware', () => {
       });
 
       // Run all validations
-      await Promise.all(
-        postsInputValidation.map((validation) => validation.run(req)),
-      );
+      await Promise.all(postsInputValidation.map((validation) => validation.run(req)));
 
       const errors = validationResult(req);
       expect(errors.array()).toHaveLength(5); // All fields should have errors

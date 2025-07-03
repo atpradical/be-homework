@@ -1,17 +1,16 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '../../../core';
 import { errorsHandler } from '../../../core/errors/errors.handler';
-import { UserQueryInput } from '../routes/input/user-query.input';
+import { UserQueryInput } from '../types/user-query.input';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../core/helpers/set-default-sort-and-pagination';
-import { usersService } from '../application';
-import { mapToUserListPaginatedOutput } from '../routes/mappers/map-to-user-list-paginated-output';
+import { mapToUserListPaginatedOutput } from '../mappers/map-to-user-list-paginated-output';
+import { usersService } from '../domain/users.service';
 
-export async function getUsersListHandler(
-  req: Request<{}, {}, {}, UserQueryInput>,
-  res: Response,
-) {
+export async function getUsersListHandler(req: Request, res: Response) {
   try {
-    const queryInput = setDefaultSortAndPaginationIfNotExist(req.query);
+    const query = req.query as unknown as UserQueryInput;
+
+    const queryInput = setDefaultSortAndPaginationIfNotExist(query);
 
     const { items, totalCount } = await usersService.findAll(queryInput);
 

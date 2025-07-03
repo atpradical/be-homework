@@ -1,20 +1,12 @@
 import { User } from '../types';
 import { ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../db/mongo.db';
-import { UserQueryInput } from '../routes/input/user-query.input';
+import { UserQueryInput } from '../types/user-query.input';
 
 export const usersQueryRepository = {
-  async findAll(
-    queryDto: UserQueryInput,
-  ): Promise<{ items: WithId<User>[]; totalCount: number }> {
-    const {
-      searchEmailTerm,
-      searchLoginTerm,
-      sortBy,
-      sortDirection,
-      pageNumber,
-      pageSize,
-    } = queryDto;
+  async findAll(queryDto: UserQueryInput): Promise<{ items: WithId<User>[]; totalCount: number }> {
+    const { searchEmailTerm, searchLoginTerm, sortBy, sortDirection, pageNumber, pageSize } =
+      queryDto;
 
     const skip = (pageNumber - 1) * pageSize;
 
@@ -60,9 +52,7 @@ export const usersQueryRepository = {
     return await usersCollection.findOne({ login });
   },
 
-  async findUserByLoginOrEmail(
-    loginOrEmail: string,
-  ): Promise<WithId<User> | null> {
+  async findUserByLoginOrEmail(loginOrEmail: string): Promise<WithId<User> | null> {
     return await usersCollection.findOne({
       $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
     });

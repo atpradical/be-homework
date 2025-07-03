@@ -2,10 +2,10 @@ import request from 'supertest';
 import express, { Express } from 'express';
 import { MongoClient, ObjectId } from 'mongodb';
 import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
-import { BlogInputDto } from '../../../src/features/blogs/dto/blogInputDto';
+import { BlogInputDto } from '../../../src/features/blogs/types/blog-input.dto';
 import { BLOGS_PATH, HttpStatus, POSTS_PATH } from '../../../src/core';
-import { PostInputDto } from '../../../src/features/posts/dto/postInputDto';
-import { SETTINGS } from '../../../src/core/settings';
+import { PostInputDto } from '../../../src/features/posts/types/post-input.dto';
+import { appConfig } from '../../../src/core/config';
 import { setupApp } from '../../../src/setup-app';
 import { runDB } from '../../../src/db/mongo.db';
 
@@ -31,12 +31,12 @@ describe('Post API', () => {
     // Initialize the app and get the Express instance
     app = express();
     setupApp(app);
-    const PORT = SETTINGS.PORT;
+    const PORT = appConfig.PORT;
 
-    await runDB(SETTINGS.MONGO_URL);
+    await runDB(appConfig.MONGO_URL);
 
     // Connect to the test database
-    mongoClient = new MongoClient(SETTINGS.MONGO_URL);
+    mongoClient = new MongoClient(appConfig.MONGO_URL);
     await mongoClient.connect();
 
     // Clear the database before tests
@@ -93,9 +93,7 @@ describe('Post API', () => {
     const post2 = await createTestPost({ title: 'Test Post 2' });
 
     // Get all posts
-    const postsListResponse = await request(app)
-      .get(POSTS_PATH)
-      .expect(HttpStatus.Ok);
+    const postsListResponse = await request(app).get(POSTS_PATH).expect(HttpStatus.Ok);
 
     // Verify response
     expect(postsListResponse.body).toBeInstanceOf(Object);
@@ -146,9 +144,11 @@ describe('Post API', () => {
   it('✅ should return 404 for non-existent post; GET /api/posts/:id', async () => {
     // Try to get a non-existent post
     const nonExistentId = new ObjectId().toHexString();
-    await request(app)
+    const result = await request(app)
       .get(`${POSTS_PATH}/${nonExistentId}`)
       .expect(HttpStatus.NotFound);
+
+    console.log(result);
   });
 
   it('✅ should update post; PUT /api/posts/:id', async () => {
@@ -188,6 +188,7 @@ describe('Post API', () => {
 
   it('✅ should return 404 when updating non-existent post; PUT /api/posts/:id', async () => {
     const nonExistentId = new ObjectId().toHexString();
+
     const updateData: PostInputDto = {
       title: 'Updated Title',
       shortDescription: 'Updated short description',
@@ -195,11 +196,13 @@ describe('Post API', () => {
       blogId: testBlogId,
     };
 
-    await request(app)
+    const result = await request(app)
       .put(`${POSTS_PATH}/${nonExistentId}`)
       .set('Authorization', adminToken)
       .send(updateData)
       .expect(HttpStatus.NotFound);
+
+    console.log(result);
   });
 
   it('✅ DELETE /api/posts/:id and check after NOT FOUND', async () => {
@@ -207,9 +210,7 @@ describe('Post API', () => {
     const createdPost = await createTestPost();
 
     // Verify the post exists before deletion
-    await request(app)
-      .get(`${POSTS_PATH}/${createdPost.id}`)
-      .expect(HttpStatus.Ok);
+    await request(app).get(`${POSTS_PATH}/${createdPost.id}`).expect(HttpStatus.Ok);
 
     // Delete the post
     await request(app)
