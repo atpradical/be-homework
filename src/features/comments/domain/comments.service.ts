@@ -79,8 +79,8 @@ export const commentsService = {
 
     if (!result) {
       return {
-        status: ResultStatus.BadRequest,
-        errorMessage: 'BadRequest',
+        status: ResultStatus.NotFound,
+        errorMessage: 'NotFound',
         extensions: [{ field: 'comment', message: `comment with id:${id} was not deleted` }],
         data: null,
       };
