@@ -1,22 +1,14 @@
 import { Blog } from '../types';
-import { BlogInputDto } from '../dto/blogInputDto';
+import { BlogInputDto } from '../types/blog-input.dto';
 import { blogsCollection } from '../../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
 import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
-import { BlogQueryInput } from '../routes/input/blog-query.input';
+import { BlogQueryInput } from '../types/blog-query.input';
 
 export const blogsRepository = {
-  async findAll(
-    queryDto: BlogQueryInput,
-  ): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
-    const {
-      pageSize,
-      pageNumber,
-      sortBy,
-      sortDirection,
-      searchWebsiteUrlTerm,
-      searchNameTerm,
-    } = queryDto;
+  async findAll(queryDto: BlogQueryInput): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
+    const { pageSize, pageNumber, sortBy, sortDirection, searchWebsiteUrlTerm, searchNameTerm } =
+      queryDto;
 
     const skip = (pageNumber - 1) * pageSize;
     const filter: any = {};

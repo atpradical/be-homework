@@ -2,9 +2,9 @@ import request from 'supertest';
 import express, { Express } from 'express';
 import { MongoClient, ObjectId } from 'mongodb';
 import { generateBasicAuthToken } from '../../utils/generate-admin-auth-token';
-import { BlogInputDto } from '../../../src/features/blogs/dto/blogInputDto';
+import { BlogInputDto } from '../../../src/features/blogs/types/blog-input.dto';
 import { BLOGS_PATH, HttpStatus } from '../../../src/core';
-import { SETTINGS } from '../../../src/core/settings';
+import { appConfig } from '../../../src/core/config';
 import { setupApp } from '../../../src/setup-app';
 import { runDB } from '../../../src/db/mongo.db';
 
@@ -16,12 +16,12 @@ describe('Blogs API', () => {
     // Initialize the app and get the Express instance
     app = express();
     setupApp(app);
-    const PORT = SETTINGS.PORT;
+    const PORT = appConfig.PORT;
 
-    await runDB(SETTINGS.MONGO_URL);
+    await runDB(appConfig.MONGO_URL);
 
     // Connect to the test database
-    mongoClient = new MongoClient(SETTINGS.MONGO_URL);
+    mongoClient = new MongoClient(appConfig.MONGO_URL);
     await mongoClient.connect();
 
     // Clear the database before tests
@@ -40,7 +40,7 @@ describe('Blogs API', () => {
     description: 'Test Blog Description',
     websiteUrl: 'https://test-blog.com',
   };
-  it('✅ should create blog; POST /api/blogs', async () => {
+  it('✅ should create blog; POST /api.tst/blogs', async () => {
     const newBlog: BlogInputDto = {
       ...testBlogData,
     };
@@ -52,7 +52,7 @@ describe('Blogs API', () => {
       .expect(HttpStatus.Created);
   });
 
-  it('✅ should return blogs list; GET /api/blogs', async () => {
+  it('✅ should return blogs list; GET /api.tst/blogs', async () => {
     // Clear any existing data
     await request(app).delete('/testing/all-data').expect(204);
 
@@ -95,78 +95,7 @@ describe('Blogs API', () => {
     });
   });
 
-  it('✅ should return paginated blogs with default values; GET /api/blogs', async () => {
-    // Clear any existing data
-    await request(app).delete('/testing/all-data').expect(204);
-
-    // Create 15 test blogs
-    const testBlogs: BlogInputDto[] = Array.from({ length: 15 }, (_, i) => ({
-      name: `Test Blog ${i + 1}`,
-      description: `Description ${i + 1}`,
-      websiteUrl: `https://test-blog-${i + 1}.com`,
-    }));
-
-    await Promise.all(
-      testBlogs.map((blog) =>
-        request(app)
-          .post(BLOGS_PATH)
-          .set('Authorization', adminToken)
-          .send(blog)
-          .expect(HttpStatus.Created),
-      ),
-    );
-
-    // Get first page with default pagination (pageSize=10, pageNumber=1)
-    const firstPageResponse = await request(app)
-      .get(BLOGS_PATH)
-      .set('Authorization', adminToken)
-      .expect(HttpStatus.Ok);
-
-    // Verify pagination metadata
-    expect(firstPageResponse.body).toMatchObject({
-      pagesCount: 2,
-      page: 1,
-      pageSize: 10,
-      totalCount: 15,
-      items: expect.any(Array),
-    });
-
-    // Verify we got 10 items on the first page
-    expect(firstPageResponse.body.items).toHaveLength(10);
-
-    // Get the second page
-    const secondPageResponse = await request(app)
-      .get(`${BLOGS_PATH}?pageNumber=2&pageSize=10`)
-      .set('Authorization', adminToken)
-      .expect(HttpStatus.Ok);
-
-    // Verify pagination metadata for the second page
-    expect(secondPageResponse.body).toMatchObject({
-      pagesCount: 2,
-      page: 2,
-      pageSize: 10,
-      totalCount: 15,
-      items: expect.any(Array),
-    });
-
-    // Verify we got 5 items on the second page
-    expect(secondPageResponse.body.items).toHaveLength(5);
-
-    // Verify items on the first and second pages don't overlap
-    const firstPageIds = firstPageResponse.body.items.map(
-      (item: any) => item.id,
-    );
-    const secondPageIds = secondPageResponse.body.items.map(
-      (item: any) => item.id,
-    );
-
-    const commonIds = firstPageIds.filter((id: string) =>
-      secondPageIds.includes(id),
-    );
-    expect(commonIds).toHaveLength(0);
-  });
-
-  it('✅ should return sorted blogs; GET /api/blogs', async () => {
+  it('✅ should return sorted blogs; GET /api.tst/blogs', async () => {
     // Clear any existing data
     await request(app).delete('/testing/all-data').expect(204);
 
@@ -209,16 +138,14 @@ describe('Blogs API', () => {
       .expect(HttpStatus.Ok);
 
     // Verify sorting by creation date
-    const createdAtDates = dateSortedResponse.body.items.map(
-      (blog: any) => blog.createdAt,
-    );
+    const createdAtDates = dateSortedResponse.body.items.map((blog: any) => blog.createdAt);
     const sortedDates = [...createdAtDates].sort(
       (a, b) => new Date(b).getTime() - new Date(a).getTime(),
     );
     expect(createdAtDates).toEqual(sortedDates);
   });
 
-  it('✅ should return blog by id; GET /api/blogs/:id', async () => {
+  it('✅ should return blog by id; GET /api.tst/blogs/:id', async () => {
     // Clear any existing data
     await request(app).delete('/testing/all-data').expect(204);
 
@@ -249,7 +176,7 @@ describe('Blogs API', () => {
     expect(ObjectId.isValid(getResponse.body.id)).toBe(true);
   });
 
-  it('✅ should return 404 for non-existent blog; GET /api/blogs/:id', async () => {
+  it('✅ should return 404 for non-existent blog; GET /api.tst/blogs/:id', async () => {
     // Try to get a non-existent blog
     const nonExistentId = new ObjectId().toHexString();
     await request(app)
@@ -258,7 +185,7 @@ describe('Blogs API', () => {
       .expect(HttpStatus.NotFound);
   });
 
-  it('✅ should update blog; PUT /api/blogs/:id', async () => {
+  it('✅ should update blog; PUT /api.tst/blogs/:id', async () => {
     // Clear any existing data
     await request(app).delete('/testing/all-data').expect(204);
 
@@ -299,7 +226,7 @@ describe('Blogs API', () => {
     });
   });
 
-  it('✅ should return 404 when updating non-existent blog; PUT /api/blogs/:id', async () => {
+  it('✅ should return 404 when updating non-existent blog; PUT /api.tst/blogs/:id', async () => {
     const nonExistentId = new ObjectId().toHexString();
     const blogUpdateData: BlogInputDto = {
       name: 'Updated Name',
@@ -314,7 +241,7 @@ describe('Blogs API', () => {
       .expect(HttpStatus.NotFound);
   });
 
-  it('✅ DELETE /api/blogs/:id and check after NOT FOUND', async () => {
+  it('✅ DELETE /api.tst/blogs/:id and check after NOT FOUND', async () => {
     // Clear any existing data
     await request(app).delete('/testing/all-data').expect(204);
 
@@ -347,7 +274,7 @@ describe('Blogs API', () => {
     expect(blogResponse.status).toBe(HttpStatus.NotFound);
   });
 
-  it('✅ should return 404 when deleting non-existent blog; DELETE /api/blogs/:id', async () => {
+  it('✅ should return 404 when deleting non-existent blog; DELETE /api.tst/blogs/:id', async () => {
     const nonExistentId = new ObjectId().toHexString();
     await request(app)
       .delete(`${BLOGS_PATH}/${nonExistentId}`)

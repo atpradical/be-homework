@@ -1,14 +1,12 @@
-import { PostInputDto } from '../dto/postInputDto';
+import { PostInputDto } from '../types/post-input.dto';
 import { Post } from '../types';
 import { postsCollection } from '../../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
 import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
-import { PostQueryInput } from '../routes/input/post-query.input';
+import { PostQueryInput } from '../types/post-query.input';
 
 export const postsRepository = {
-  async findAll(
-    queryDto: PostQueryInput,
-  ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+  async findAll(queryDto: PostQueryInput): Promise<{ items: WithId<Post>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
 
     const skip = (pageNumber - 1) * pageSize;
@@ -40,13 +38,7 @@ export const postsRepository = {
     return { ...newPost, _id: insertResult.insertedId };
   },
 
-  async update(id: string, dto: PostInputDto): Promise<void> {
-    const post = await postsCollection.findOne({ _id: new ObjectId(id) });
-
-    if (!post) {
-      throw new RepositoryNotFoundError('Post not exist');
-    }
-
+  async update(id: string, dto: PostInputDto): Promise<boolean> {
     const updateResult = await postsCollection.updateOne(
       { _id: new ObjectId(id) },
       {
@@ -59,31 +51,15 @@ export const postsRepository = {
       },
     );
 
-    if (updateResult.matchedCount < 1) {
-      //  TODO: заменить на DomainError если такая проверка есть в дз
-      throw new Error('Post not exist');
-    }
-
-    return;
+    return updateResult.matchedCount === 1;
   },
 
-  async delete(id: string): Promise<void> {
-    const post = await postsCollection.findOne({ _id: new ObjectId(id) });
-
-    if (!post) {
-      throw new RepositoryNotFoundError('Post not exist');
-    }
-
+  async delete(id: string): Promise<boolean> {
     const deleteResult = await postsCollection.deleteOne({
       _id: new ObjectId(id),
     });
 
-    if (deleteResult.deletedCount < 1) {
-      //  TODO: заменить на DomainError если такая проверка есть в дз
-      throw new Error('Post not exist');
-    }
-
-    return;
+    return deleteResult.deletedCount === 1;
   },
 
   async findPostsByBlog(

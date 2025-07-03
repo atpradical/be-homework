@@ -4,7 +4,7 @@ import { HttpStatus } from '../../enums';
 import { formatErrors } from '../../helpers/error.utils';
 
 export const inputValidationResultMiddleware = (
-  req: Request<{}, {}, {}, {}>,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
@@ -16,5 +16,6 @@ export const inputValidationResultMiddleware = (
     res.status(HttpStatus.BadRequest).json({ errorsMessages: errors });
     return;
   }
+
   next();
 };

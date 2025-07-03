@@ -1,3 +1,6 @@
+export type IdType = { id: string };
+export type PostIdType = { postId: string };
+
 export type ValidationErrorType = {
   field: string;
   message: string;
