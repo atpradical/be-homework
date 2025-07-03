@@ -25,6 +25,6 @@ export async function createCommentHandler(
 
   const resultViewModel = mapToCommentViewModel(result.data);
 
-  res.status(HttpStatus.Ok).send(resultViewModel);
+  res.status(HttpStatus.Created).send(resultViewModel);
   return;
 }

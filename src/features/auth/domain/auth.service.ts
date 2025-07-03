@@ -13,9 +13,9 @@ export const authService = {
 
     if (result.status !== ResultStatus.Success) {
       return {
-        status: ResultStatus.NotFound,
+        status: ResultStatus.Unauthorized,
         data: null,
-        errorMessage: 'Bad Request',
+        errorMessage: 'Unauthorized',
         extensions: [{ field: 'loginOrEmail', message: 'Wrong credentials' }],
       };
     }

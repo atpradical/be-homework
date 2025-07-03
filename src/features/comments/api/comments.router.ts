@@ -5,6 +5,7 @@ import { accessTokenGuard } from '../../auth/api/guards/access-token.guard';
 import { updateCommentHandler } from './handlers/update-comment.handler';
 import { deleteCommentHandler } from './handlers/delete-comment.handler';
 import { commentExistValidation } from './middleware/comment-exist.validation';
+import { commentsInputValidation } from './middleware/comments.input-dto.validation';
 
 export const commentsRouter = Router({});
 
@@ -15,6 +16,7 @@ commentsRouter
     '/:id',
     accessTokenGuard,
     routeIdValidation,
+    commentsInputValidation,
     inputValidationResultMiddleware,
     commentExistValidation,
     updateCommentHandler,
