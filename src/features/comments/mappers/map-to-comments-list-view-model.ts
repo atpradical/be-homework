@@ -11,19 +11,19 @@ export function mapToCommentsListViewModel(
   },
 ): CommentListPaginatedOutput {
   return {
+    pagesCount: Math.ceil(pagination.totalCount / pagination.pageSize),
     page: pagination.pageNumber,
     pageSize: pagination.pageSize,
-    pagesCount: Math.ceil(pagination.totalCount / pagination.pageSize),
     totalCount: pagination.totalCount,
 
     items: comments.map((c) => ({
       id: c._id.toString(),
       content: c.content,
+      createdAt: c.createdAt.toISOString(),
       commentatorInfo: {
         userId: c.commentatorInfo.userId,
         userLogin: c.commentatorInfo.userLogin,
       },
-      createdAt: c.createdAt.toISOString(),
     })),
   };
 }
