@@ -1,5 +1,6 @@
 import { BlogInputDto } from '../../../src/features/blogs/types/blog-input.dto';
 import { PostInputDto } from '../../../src/features/posts/types/post-input.dto';
+import { CommentInputDto } from '../../../src/features/comments/types/comment.input.dto';
 
 export type UserDto = {
   login: string;
@@ -96,5 +97,22 @@ export const testingDtosCreator = {
       });
     }
     return users;
+  },
+
+  createCommentDto({ content }: { content?: string }): CommentInputDto {
+    return {
+      content: content ?? 'test comment content',
+    };
+  },
+
+  createCommentDtos(count: number): CommentInputDto[] {
+    const comment = [];
+
+    for (let i = 0; i <= count; i++) {
+      comment.push({
+        content: `test comment content ${i}`,
+      });
+    }
+    return comment;
   },
 };
