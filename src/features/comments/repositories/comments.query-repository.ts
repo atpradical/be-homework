@@ -19,7 +19,7 @@ export const commentsQueryRepository = {
       .limit(pageSize)
       .toArray();
 
-    const totalCount = await commentsCollection.countDocuments();
+    const totalCount = await commentsCollection.countDocuments({ postId: new ObjectId(postId) });
 
     return { items, totalCount };
   },

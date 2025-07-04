@@ -6,6 +6,7 @@ import { CommentInputDto } from '../types/comment.input.dto';
 
 export const commentsRepository = {
   async findAll(
+    postId: string,
     queryDto: CommentQueryInput,
   ): Promise<{ items: WithId<CommentDB>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
@@ -13,7 +14,7 @@ export const commentsRepository = {
     const skip = (pageNumber - 1) * pageSize;
 
     const items = await commentsCollection
-      .find()
+      .find({ postId: new ObjectId(postId) })
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
