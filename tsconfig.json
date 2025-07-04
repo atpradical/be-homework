@@ -2,7 +2,8 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
-    "rootDir": "./src", //основная директория разработки
+//    "rootDir": "./src", //основная директория разработки
+    "rootDir": "./", //основная директория разработки
     "outDir": "./dist", //скомпилированный код проекта
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -11,7 +12,8 @@
     "skipLibCheck": true,
     "sourceMap": true
   },
-  "include": ["src/**/*"],
+//  "include": ["src/**/*"],
+  "include": ["src/**/*", "__tests__/**/*"],
   "exclude": ["__tests__", "dist", "node_modules"],
   "files": ["src/core/types/index.d.ts"]
 }
