@@ -24,7 +24,7 @@ commentsRouter
   .delete(
     '/:id',
     accessTokenGuard,
-    // routeIdValidation,
+    routeIdValidation,
     inputValidationResultMiddleware,
     deleteCommentHandler,
   );

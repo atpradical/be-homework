@@ -204,8 +204,8 @@ export const postsService = {
 
     if (!postData) {
       return {
-        status: ResultStatus.BadRequest,
-        errorMessage: 'BadRequest',
+        status: ResultStatus.NotFound,
+        errorMessage: 'NotFound',
         extensions: [{ field: 'postId', message: 'Post not found' }],
         data: null,
       };
