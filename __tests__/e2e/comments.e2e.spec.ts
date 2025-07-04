@@ -189,6 +189,7 @@ describe('Comments API test', () => {
       .expect(200);
 
     expect(response1.body.items).toHaveLength(10);
+    expect(response1.body.totalCount).toEqual(13);
 
     const response1Page2 = await request(app)
       .get(POSTS_PATH + `/${post1.id}` + COMMENTS_PATH + '?pageNumber=2')
