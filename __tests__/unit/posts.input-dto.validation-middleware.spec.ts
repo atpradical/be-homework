@@ -6,7 +6,7 @@ import {
   postsInputValidation,
   shortDescriptionValidation,
   titleValidation,
-} from '../../../../../src/features/posts/api/middleware/posts.input-dto.validation';
+} from '../../src/features/posts/api/middleware/posts.input-dto.validation';
 
 // Mock Express request/response objects
 const mockRequest = (body: any = {}) => ({

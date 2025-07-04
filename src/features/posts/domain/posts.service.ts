@@ -216,6 +216,7 @@ export const postsService = {
         userId: userData._id.toString(),
         userLogin: userData.login,
       },
+      postId: postData._id,
       content: dto.content,
       createdAt: new Date(),
     };

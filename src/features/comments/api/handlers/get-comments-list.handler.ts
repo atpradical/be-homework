@@ -23,7 +23,7 @@ export async function getCommentsListHandler(
 
   const queryInput = setDefaultSortAndPaginationIfNotExist(req.query);
 
-  const { items, totalCount } = await commentsQueryRepository.findAll(queryInput);
+  const { items, totalCount } = await commentsQueryRepository.findAll(postId, queryInput);
 
   const resultViewModel = mapToCommentsListViewModel(items, {
     pageNumber: queryInput.pageNumber,
