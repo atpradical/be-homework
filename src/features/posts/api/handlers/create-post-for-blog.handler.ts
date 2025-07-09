@@ -6,12 +6,12 @@ import { postsService } from '../../domain/posts.service';
 import { RequestWithParamsAndBody } from '../../../../core/types/requests';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
-import { ExtensionType } from '../../../../core/result/result.type';
 import { PostViewModel } from '../../types';
+import { ExtensionType } from '../../../../core/result/object-result.entity';
 
 export async function createPostForBlogHandler(
   req: RequestWithParamsAndBody<{ blogId: string }, PostInputDto>,
-  res: Response<PostViewModel | ExtensionType[]>,
+  res: Response<PostViewModel | ExtensionType[] | string>,
 ) {
   const blogId = req.params.blogId;
 

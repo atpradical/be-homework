@@ -31,4 +31,4 @@ export const emailValidation = body('email')
   .isEmail()
   .withMessage('not correct email');
 
-export const userInputValidation = [loginValidation, passwordValidation, emailValidation];
+export const registrationInputValidation = [loginValidation, passwordValidation, emailValidation];

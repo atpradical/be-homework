@@ -5,13 +5,13 @@ import { resultCodeToHttpException } from '../../../../core/result/resultCodeToH
 import { HttpStatus, IdType, PostIdType } from '../../../../core';
 import { RequestWithParamsAndBodyAndUserId } from '../../../../core/types/requests';
 import { CommentInputDto } from '../../types/comment.input.dto';
-import { ExtensionType } from '../../../../core/result/result.type';
 import { CommentView } from '../../types';
 import { mapToCommentViewModel } from '../../mappers/map-to-comment-view-model';
+import { ExtensionType } from '../../../../core/result/object-result.entity';
 
 export async function createCommentHandler(
   req: RequestWithParamsAndBodyAndUserId<PostIdType, CommentInputDto, IdType>,
-  res: Response<CommentView | ExtensionType[]>,
+  res: Response<CommentView | ExtensionType[] | string>,
 ) {
   const userId = req.user.id;
   const postId = req.params.postId;

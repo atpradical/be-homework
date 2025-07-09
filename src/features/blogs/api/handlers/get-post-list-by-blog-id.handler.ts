@@ -8,12 +8,12 @@ import { mapToPostListPaginatedOutput } from '../../../posts/mappers/map-to-post
 import { RequestWithParamsAndQuery } from '../../../../core/types/requests';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
-import { ExtensionType } from '../../../../core/result/result.type';
 import { PostListPaginatedOutput } from '../../../posts/types/post-list-paginated.output';
+import { ExtensionType } from '../../../../core/result/object-result.entity';
 
 export async function getPostListByBlogIdHandler(
   req: RequestWithParamsAndQuery<{ blogId: string }, PaginationAndSorting<PostSortField>>, // Request<{ blogId: string }, {}, {}, PaginationAndSorting<PostSortField>>,
-  res: Response<PostListPaginatedOutput | ExtensionType[]>,
+  res: Response<PostListPaginatedOutput | ExtensionType[] | string>,
 ) {
   const blogId = req.params.blogId;
   const queryInput = setDefaultSortAndPaginationIfNotExist(req.query);

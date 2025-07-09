@@ -1,9 +1,9 @@
-export type User = {
-  login: string;
-  email: string;
-  password: string;
-  createdAt: Date;
-};
+// export type User = {
+//   login: string;
+//   email: string;
+//   password: string;
+//   createdAt: Date;
+// };
 
 export type UserViewModel = {
   id: string;

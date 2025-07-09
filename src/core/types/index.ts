@@ -7,3 +7,5 @@ export type ValidationErrorType = {
 };
 
 export type ValidationErrorDto = { errorsMessages: ValidationErrorType[] };
+
+export type Nullable<T> = T | null;
