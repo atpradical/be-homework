@@ -85,6 +85,16 @@ export const usersRepository = {
     return !!user;
   },
 
+  async doesExistByLogin(login: string): Promise<boolean> {
+    const user = await usersCollection.findOne({ login });
+    return !!user;
+  },
+
+  async doesExistByEmail(email: string): Promise<boolean> {
+    const user = await usersCollection.findOne({ email });
+    return !!user;
+  },
+
   async findUserByConfirmationCode(code: string): Promise<WithId<User> | null> {
     return await usersCollection.findOne({ 'emailConfirmation.confirmationCode': code });
   },

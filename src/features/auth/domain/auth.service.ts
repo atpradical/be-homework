@@ -68,9 +68,21 @@ export const authService = {
   async registerUser(dto: RegistrationUserInputDto): Promise<Nullable<ObjectResult<User>>> {
     const { login, email, password } = dto;
 
-    const isUser = await usersRepository.doesExistByLoginOrEmail({ login, email });
+    const isSameLogin = await usersRepository.doesExistByLogin(login);
 
-    if (isUser) {
+    if (isSameLogin) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Bad Request',
+        extensions: [
+          { field: 'loginOrEmail', message: 'User with this login or email already exists' },
+        ],
+      });
+    }
+
+    const isSameEmail = await usersRepository.doesExistByEmail(email);
+
+    if (isSameEmail) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
