@@ -17,6 +17,6 @@ export async function registrationHandler(
     return;
   }
 
-  res.status(HttpStatus.Created).send();
+  res.status(HttpStatus.NoContent).send();
   return;
 }
