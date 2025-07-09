@@ -7,11 +7,11 @@ import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { RequestWithBody } from '../../../../core/types/requests';
 import { PostViewModel } from '../../types';
-import { ExtensionType } from '../../../../core/result/result.type';
+import { ExtensionType } from '../../../../core/result/object-result.entity';
 
 export async function createPostHandler(
   req: RequestWithBody<PostInputDto>,
-  res: Response<PostViewModel | ExtensionType[]>,
+  res: Response<PostViewModel | ExtensionType[] | string>,
 ) {
   const result = await postsService.create(req.body);
 

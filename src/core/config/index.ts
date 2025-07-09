@@ -9,4 +9,6 @@ export const appConfig = {
   AC_SECRET: process.env.AC_SECRET as string,
   AC_TIME: Number(process.env.AC_TIME) || 300, // Преобразуем в число
   RT_SECRET: (process.env.RT_SECRET as string) || 'rt_secret',
+  EMAIL: process.env.EMAIL as string,
+  EMAIL_PASS: process.env.EMAIL_PASS as string,
 };

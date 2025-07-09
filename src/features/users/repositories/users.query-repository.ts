@@ -1,7 +1,7 @@
-import { User } from '../types';
 import { ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../db/mongo.db';
 import { UserQueryInput } from '../types/user-query.input';
+import { User } from '../domain/user.entity';
 
 export const usersQueryRepository = {
   async findAll(queryDto: UserQueryInput): Promise<{ items: WithId<User>[]; totalCount: number }> {

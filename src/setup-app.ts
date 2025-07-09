@@ -3,10 +3,10 @@ import {
   AUTH_PATH,
   BLOGS_PATH,
   COMMENTS_PATH,
+  HttpStatus,
   POSTS_PATH,
   TESTING_PATH,
   USERS_PATH,
-  HttpStatus,
 } from './core';
 import { authRouter } from './features/auth/api/auth.router';
 import { commentsRouter } from './features/comments/api/comments.router';

@@ -3,7 +3,7 @@ import { appConfig } from '../core/config';
 import { CommentDB } from '../features/comments/types';
 import { Blog } from '../features/blogs/types';
 import { Post } from '../features/posts/types';
-import { User } from '../features/users/types';
+import { User } from '../features/users/domain/user.entity';
 
 const BLOG_COLLECTION_NAME = 'blogs';
 const POST_COLLECTION_NAME = 'posts';
