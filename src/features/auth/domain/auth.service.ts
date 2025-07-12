@@ -74,9 +74,7 @@ export const authService = {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
-        extensions: [
-          { field: 'loginOrEmail', message: 'User with this login or email already exists' },
-        ],
+        extensions: [{ field: 'login', message: 'User with this login already exists' }],
       });
     }
 
@@ -86,9 +84,7 @@ export const authService = {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
-        extensions: [
-          { field: 'loginOrEmail', message: 'User with this login or email already exists' },
-        ],
+        extensions: [{ field: 'email', message: 'User with this email already exists' }],
       });
     }
 
