@@ -4,18 +4,20 @@ import { authService } from '../../domain/auth.service';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { HttpStatus } from '../../../../core';
-import { ResponseWithExtensions } from '../../../../core/types/responses';
+import { ResponseWithExtensionsErrorMessages } from '../../../../core/types/responses';
 
 export async function registrationEmailResendingHandler(
   req: RequestWithBody<RegistrationEmailResendingInputDto>,
-  res: ResponseWithExtensions,
+  res: ResponseWithExtensionsErrorMessages,
 ) {
   const email = req.body.email;
 
   const result = await authService.resendEmailConfirmation({ email });
 
   if (result.status !== ResultStatus.Success) {
-    res.status(resultCodeToHttpException(result.status)).send(result.extensions);
+    res
+      .status(resultCodeToHttpException(result.status))
+      .send({ errorsMessages: result.extensions });
     return;
   }
 
