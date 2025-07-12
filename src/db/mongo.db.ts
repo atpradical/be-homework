@@ -44,3 +44,23 @@ export async function stopDb(): Promise<void> {
   }
   await client.close();
 }
+
+export async function dropDb(): Promise<void> {
+  if (!client) {
+    throw new Error(`❌ No active client`);
+  }
+
+  try {
+    const collections = await client.db().listCollections().toArray();
+
+    for (const collection of collections) {
+      const collectionName = collection.name;
+      await client.db().collection(collectionName).deleteMany({});
+    }
+  } catch (e: unknown) {
+    console.error('Error in drop db:', e);
+    await client.close();
+  }
+
+  await client.close();
+}

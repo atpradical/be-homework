@@ -180,6 +180,22 @@ export const authService = {
       });
     }
 
+    if (user.emailConfirmation.isConfirmed) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Bad Request',
+        extensions: 'Already confirmed',
+      });
+    }
+
+    if (user.emailConfirmation.expirationDate < new Date()) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Bad Request',
+        extensions: 'Code is expired',
+      });
+    }
+
     const updateResult = await usersRepository.update(user._id, {
       emailConfirmation: {
         isConfirmed: true,
