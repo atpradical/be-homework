@@ -4,16 +4,18 @@ import { resultCodeToHttpException } from '../../../../core/result/resultCodeToH
 import { HttpStatus } from '../../../../core';
 import { RequestWithBody } from '../../../../core/types/requests';
 import { RegistrationUserInputDto } from '../../types/registration-user-input.dto';
-import { ResponseWithExtensions } from '../../../../core/types/responses';
+import { ResponseWithExtensionsErrorMessages } from '../../../../core/types/responses';
 
 export async function registrationHandler(
   req: RequestWithBody<RegistrationUserInputDto>,
-  res: ResponseWithExtensions,
+  res: ResponseWithExtensionsErrorMessages,
 ) {
   const result = await authService.registerUser(req.body);
 
   if (result.status !== ResultStatus.Success) {
-    res.status(resultCodeToHttpException(result.status)).send(result.extensions);
+    res
+      .status(resultCodeToHttpException(result.status))
+      .send({ errorsMessages: result.extensions });
     return;
   }
 
