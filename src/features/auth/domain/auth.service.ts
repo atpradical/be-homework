@@ -180,7 +180,7 @@ export const authService = {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
-        extensions: 'Already confirmed',
+        extensions: [{ message: 'Already confirmed', field: 'code' }],
       });
     }
 
@@ -188,7 +188,7 @@ export const authService = {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
-        extensions: 'Code is expired',
+        extensions: [{ message: 'Code is expired', field: 'code' }],
       });
     }
 

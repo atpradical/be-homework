@@ -2,40 +2,24 @@ import { nodemailerService } from '../../src/features/auth/adapters/nodemailer.s
 import { authService } from '../../src/features/auth/domain/auth.service';
 import { testSeeder } from './test.seeder';
 import { ResultStatus } from '../../src/core/result/resultCode';
-import { runDB, stopDb } from '../../src/db/mongo.db';
-import express from 'express';
-import { setupApp } from '../../src/setup-app';
-import { appConfig } from '../../src/core/config';
-import request from 'supertest';
+import { client, dropDb, runDB, stopDb } from '../../src/db/mongo.db';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 describe('AUTH-INTEGRATION', () => {
-  // beforeAll(async () => {
-  //   let mongoServer = await MongoMemoryServer.create();
-  //   const url = mongoServer.getUri();
-  //   await runDB(url);
-  // }, 20000);
-  //
-  // beforeEach(async () => {
-  //   await dropDb();
-  // });
-  //
-  // afterAll(async () => {
-  //   await dropDb();
-  //   await stopDb();
-  // });
-
-  const app = express();
-  setupApp(app);
-
   beforeAll(async () => {
-    await runDB(appConfig.MONGO_URL);
-  });
+    let mongoServer = await MongoMemoryServer.create();
+    const url = mongoServer.getUri();
+    await runDB(url);
+  }, 20000);
 
   beforeEach(async () => {
-    await request(app).delete('/testing/all-data').expect(204);
+    if (client) {
+      await dropDb();
+    }
   });
 
   afterAll(async () => {
+    await dropDb();
     await stopDb();
   });
 

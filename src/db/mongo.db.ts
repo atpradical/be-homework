@@ -61,6 +61,4 @@ export async function dropDb(): Promise<void> {
     console.error('Error in drop db:', e);
     await client.close();
   }
-
-  await client.close();
 }
