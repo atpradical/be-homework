@@ -153,8 +153,8 @@ export const authService = {
     nodemailerService
       .sendEmail(
         user.email,
-        user.emailConfirmation.confirmationCode,
-        emailExamples.registrationEmailResending,
+        updatedEmailConfirmation.confirmationCode,
+        emailExamples.registrationEmail,
       )
       .catch((e: unknown) => {
         console.log('error in send email: ', e);
