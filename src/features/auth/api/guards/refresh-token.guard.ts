@@ -7,17 +7,22 @@ import { tokenBlacklistRepository } from '../../../token-blacklist/repositories/
 export async function refreshTokenGuard(req: Request, res: Response, next: NextFunction) {
   const token = req.cookies.refreshToken;
 
+  if (!token) {
+    res.status(HttpStatus.Unauthorized).send('Invalid token');
+    return;
+  }
+
   const payload = await jwtService.verifyRefreshToken(token);
 
   if (!payload) {
-    res.status(HttpStatus.BadRequest).send('Invalid token');
+    res.status(HttpStatus.Unauthorized).send('Invalid token');
     return;
   }
 
   const isTokenInBlackList = await tokenBlacklistRepository.findTokenInBlackList(token);
 
   if (isTokenInBlackList) {
-    res.status(HttpStatus.BadRequest).send('Invalid token');
+    res.status(HttpStatus.Unauthorized).send('Invalid token');
     return;
   }
 
