@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus, IdType } from '../../../../core';
-import { jwtService } from '../../adapters/jwt.service';
-import { usersQueryRepository } from '../../../users/repositories/users.query-repository';
-import { tokenBlacklistRepository } from '../../../token-blacklist/repositories/tokenBlacklist.repository';
+import { authService } from '../../domain/auth.service';
+import { ResultStatus } from '../../../../core/result/resultCode';
 
 export async function refreshTokenGuard(req: Request, res: Response, next: NextFunction) {
   const token = req.cookies.refreshToken;
@@ -12,30 +11,16 @@ export async function refreshTokenGuard(req: Request, res: Response, next: NextF
     return;
   }
 
-  const payload = await jwtService.verifyRefreshToken(token);
+  const result = await authService.checkRefreshToken(token);
 
-  if (!payload) {
+  if (result.status !== ResultStatus.Success) {
     res.status(HttpStatus.Unauthorized).send('Invalid token');
     return;
   }
 
-  const isTokenInBlackList = await tokenBlacklistRepository.findTokenInBlackList(token);
-
-  if (isTokenInBlackList) {
-    res.status(HttpStatus.Unauthorized).send('Invalid token');
-    return;
-  }
-
-  const user = await usersQueryRepository.findUserById(payload.userId);
-
-  if (!user) {
-    res.status(HttpStatus.BadRequest).send('User not found');
-    return;
-  }
-
-  if (payload) {
+  if (result.data.userId) {
     // прокидываем userId в request для других middleWare
-    req.user = { id: payload.userId } as IdType;
+    req.user = { id: result.data.userId } as IdType;
     req.refreshToken = token;
     next();
     return;

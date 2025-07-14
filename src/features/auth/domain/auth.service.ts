@@ -215,6 +215,64 @@ export const authService = {
     return ObjectResult.createSuccessResult(null);
   },
 
+  async checkAccessToken(authHeader: string): Promise<ObjectResult<{ userId: string }>> {
+    const [authType, token] = authHeader.split(' ');
+
+    if (authType !== 'Bearer') {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.Unauthorized,
+        errorMessage: 'Unauthorized',
+        extensions: [{ field: 'authType', message: 'Invalid auth type' }],
+      });
+    }
+
+    const payload = await jwtService.verifyToken(token);
+
+    if (!payload) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.Unauthorized,
+        errorMessage: 'Unauthorized',
+        extensions: [{ field: 'authType', message: 'Invalid auth type' }],
+      });
+    }
+
+    return ObjectResult.createSuccessResult({ userId: payload.userId });
+  },
+
+  async checkRefreshToken(token: string): Promise<ObjectResult<{ userId: string }>> {
+    const payload = await jwtService.verifyRefreshToken(token);
+
+    if (!payload) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.Unauthorized,
+        errorMessage: 'Unauthorized',
+        extensions: [{ field: 'token', message: 'Invalid token' }],
+      });
+    }
+
+    const isTokenInBlackList = await tokenBlacklistRepository.findTokenInBlackList(token);
+
+    if (isTokenInBlackList) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.Unauthorized,
+        errorMessage: 'Unauthorized',
+        extensions: [{ field: 'token', message: 'Invalid token' }],
+      });
+    }
+
+    const user = await usersQueryRepository.findUserById(payload.userId);
+
+    if (!user) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.Unauthorized,
+        errorMessage: 'Unauthorized',
+        extensions: [{ field: 'token', message: 'Invalid token' }],
+      });
+    }
+
+    return ObjectResult.createSuccessResult({ userId: payload.userId });
+  },
+
   async refreshToken(
     id,
     token,
