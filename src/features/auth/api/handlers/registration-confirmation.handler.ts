@@ -4,11 +4,11 @@ import { authService } from '../../domain/auth.service';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { HttpStatus } from '../../../../core';
-import { ResponseWithExtensionsErrorMessages } from '../../../../core/types/responses';
+import { ErrorMessagesResponse, ResponseWith } from '../../../../core/types/responses';
 
 export async function registrationConfirmationHandler(
   req: RequestWithBody<RegistrationConfirmationInputDto>,
-  res: ResponseWithExtensionsErrorMessages,
+  res: ResponseWith<ErrorMessagesResponse>,
 ) {
   const result = await authService.confirmEmail({ code: req.body.code });
 

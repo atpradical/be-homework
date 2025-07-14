@@ -5,6 +5,7 @@ import { HttpStatus } from '../../../../core';
 import { RequestWithBody } from '../../../../core/types/requests';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
+import { appConfig } from '../../../../core/config';
 
 export async function loginHandler(req: RequestWithBody<LoginInputDto>, res: Response) {
   const result = await authService.login(req.body);
@@ -14,5 +15,14 @@ export async function loginHandler(req: RequestWithBody<LoginInputDto>, res: Res
     return;
   }
 
-  res.status(HttpStatus.Ok).send({ accessToken: result.data!.accessToken });
+  res
+    .status(HttpStatus.Ok)
+    .cookie('refreshToken', result.data.refreshToken, {
+      path: '/auth',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: appConfig.RT_COOKIE_MAX_AGE,
+    })
+    .send({ accessToken: result.data!.accessToken });
 }

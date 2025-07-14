@@ -15,22 +15,26 @@ import { randomUUID } from 'node:crypto';
 import { add } from 'date-fns/add';
 import { RegistrationConfirmationInputDto } from '../types/registration-confirmation.input.dto';
 import { Nullable } from '../../../core';
+import { AuthTokens } from '../types/auth-tokens.type';
+import { tokenBlacklistRepository } from '../../token-blacklist/repositories/tokenBlacklist.repository';
 
 export const authService = {
-  async login(dto: LoginInputDto): Promise<ObjectResult<Nullable<{ accessToken: string }>>> {
+  async login(
+    dto: LoginInputDto,
+  ): Promise<ObjectResult<Nullable<{ accessToken: string; refreshToken: string }>>> {
     const result = await this.checkCredentials(dto);
 
     if (result.status !== ResultStatus.Success) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.Unauthorized,
         errorMessage: 'Unauthorized',
-        extensions: [{ field: 'loginOrEmail', message: 'Wrong credentials' }],
+        extensions: [{ field: 'email', message: 'not confirmed' }],
       });
     }
 
-    const accessToken = await jwtService.createToken(result.data!._id.toString());
+    const { accessToken, refreshToken } = await this.generateTokens(result.data!._id.toString());
 
-    return ObjectResult.createSuccessResult({ accessToken });
+    return ObjectResult.createSuccessResult({ accessToken, refreshToken });
   },
 
   async checkCredentials(dto: LoginInputDto): Promise<ObjectResult<WithId<User>>> {
@@ -180,7 +184,7 @@ export const authService = {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
-        extensions: [{ message: 'Already confirmed', field: 'code' }],
+        extensions: [{ field: 'code', message: 'Already confirmed' }],
       });
     }
 
@@ -201,6 +205,49 @@ export const authService = {
     });
 
     if (!updateResult) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.InternalServerError,
+        errorMessage: 'Database update failed',
+        extensions: 'Please try again later. If problem persists, contact support',
+      });
+    }
+
+    return ObjectResult.createSuccessResult(null);
+  },
+
+  async refreshToken(
+    id,
+    token,
+  ): Promise<ObjectResult<Nullable<{ accessToken: string; refreshToken: string }>>> {
+    const blacklistResult = await tokenBlacklistRepository.addTokenToBlackList(token);
+
+    if (!blacklistResult) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.InternalServerError,
+        errorMessage: 'Database update failed',
+        extensions: 'Please try again later. If problem persists, contact support',
+      });
+    }
+
+    const { refreshToken, accessToken } = await this.generateTokens(id);
+
+    return ObjectResult.createSuccessResult({ accessToken, refreshToken });
+  },
+
+  async generateTokens(id: string): Promise<AuthTokens> {
+    const accessToken = await jwtService.createToken(id.toString());
+    const refreshToken = await jwtService.createRefreshToken(id.toString());
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  },
+
+  async logout(token: string): Promise<Promise<Nullable<ObjectResult>>> {
+    const result = await tokenBlacklistRepository.addTokenToBlackList(token);
+
+    if (!result) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.InternalServerError,
         errorMessage: 'Database update failed',

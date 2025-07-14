@@ -4,11 +4,11 @@ import { authService } from '../../domain/auth.service';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { HttpStatus } from '../../../../core';
-import { ResponseWithExtensionsErrorMessages } from '../../../../core/types/responses';
+import { ErrorMessagesResponse, ResponseWith } from '../../../../core/types/responses';
 
 export async function registrationEmailResendingHandler(
   req: RequestWithBody<RegistrationEmailResendingInputDto>,
-  res: ResponseWithExtensionsErrorMessages,
+  res: ResponseWith<ErrorMessagesResponse>,
 ) {
   const email = req.body.email;
 

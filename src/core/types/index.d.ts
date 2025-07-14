@@ -7,6 +7,7 @@ declare global {
         export interface Request {
             user: IdType | undefined;
             comment: WithId<CommentDB> | undefined;
+            refreshToken: string | undefined;
         }
     }
 }
