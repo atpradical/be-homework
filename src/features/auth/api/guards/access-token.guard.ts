@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus, IdType } from '../../../../core';
-import { jwtService } from '../../adapters/jwt.service';
-import { usersQueryRepository } from '../../../users/repositories/users.query-repository';
+import { authService } from '../../domain/auth.service';
+import { ResultStatus } from '../../../../core/result/resultCode';
 
 export async function accessTokenGuard(req: Request, res: Response, next: NextFunction) {
   if (!req.headers.authorization) {
@@ -9,23 +9,16 @@ export async function accessTokenGuard(req: Request, res: Response, next: NextFu
     return;
   }
 
-  const [authType, token] = req.headers.authorization.split(' ');
+  const result = await authService.checkAccessToken(req.headers.authorization);
 
-  if (authType !== 'Bearer') {
+  if (result.status !== ResultStatus.Success) {
     res.sendStatus(HttpStatus.Unauthorized);
     return;
   }
 
-  const payload = await jwtService.verifyToken(token);
-
-  if (!payload) {
-    res.status(HttpStatus.Unauthorized).send('Invalid token');
-    return;
-  }
-
-  if (payload) {
+  if (result.data.userId) {
     // прокидываем userId в request для других middleWare
-    req.user = { id: payload.userId } as IdType;
+    req.user = { id: result.data.userId } as IdType;
     next();
     return;
   }
