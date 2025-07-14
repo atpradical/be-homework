@@ -8,6 +8,12 @@ export const jwtService = {
     });
   },
 
+  async createRefreshToken(userId: string): Promise<string> {
+    return jwt.sign({ userId }, appConfig.RT_SECRET, {
+      expiresIn: appConfig.RT_TIME,
+    });
+  },
+
   async decodeToken(token: string): Promise<any> {
     try {
       return jwt.decode(token);
@@ -20,6 +26,15 @@ export const jwtService = {
   async verifyToken(token: string): Promise<{ userId: string } | null> {
     try {
       return jwt.verify(token, appConfig.AC_SECRET) as { userId: string };
+    } catch (error) {
+      console.error('Token verify some error');
+      return null;
+    }
+  },
+
+  async verifyRefreshToken(token: string): Promise<{ userId: string } | null> {
+    try {
+      return jwt.verify(token, appConfig.RT_SECRET) as { userId: string };
     } catch (error) {
       console.error('Token verify some error');
       return null;

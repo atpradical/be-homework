@@ -9,12 +9,14 @@ const BLOG_COLLECTION_NAME = 'blogs';
 const POST_COLLECTION_NAME = 'posts';
 const USERS_COLLECTION_NAME = 'users';
 const COMMENTS_COLLECTION_NAME = 'comments';
+const REFRESH_TOKEN_BLACKLIST_COLLECTION_NAME = 'refresh-token_blacklist';
 
 export let client: MongoClient;
 export let blogsCollection: Collection<Blog>;
 export let postsCollection: Collection<Post>;
 export let usersCollection: Collection<User>;
 export let commentsCollection: Collection<CommentDB>;
+export let tokenBlacklistCollection: Collection<{ token: string; createdAt: Date }>;
 
 // Подключения к бд
 export async function runDB(url: string): Promise<void> {
@@ -26,6 +28,10 @@ export async function runDB(url: string): Promise<void> {
   postsCollection = db.collection<Post>(POST_COLLECTION_NAME);
   usersCollection = db.collection<User>(USERS_COLLECTION_NAME);
   commentsCollection = db.collection<CommentDB>(COMMENTS_COLLECTION_NAME);
+  tokenBlacklistCollection = db.collection<{
+    token: string;
+    createdAt: Date; // для mongo TTL
+  }>(REFRESH_TOKEN_BLACKLIST_COLLECTION_NAME);
 
   try {
     await client.connect();
@@ -61,6 +67,12 @@ export async function dropDb(): Promise<void> {
     console.error('Error in drop db:', e);
     await client.close();
   }
+}
 
-  await client.close();
+// для  TTL
+export async function setupTokenBlacklistIndexes() {
+  await tokenBlacklistCollection.createIndex(
+    { createdAt: 1 }, // 1 - сортировка asc
+    { expireAfterSeconds: appConfig.BLACKLIST_TTL },
+  );
 }

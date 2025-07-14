@@ -14,9 +14,11 @@ import { usersRouter } from './features/users/api/users.router';
 import { blogsRouter } from './features/blogs/api/blogs.router';
 import { postsRouter } from './features/posts/api/posts.router';
 import { testingRouter } from './features/testing/domain/testing.router';
+import cookieParser from 'cookie-parser';
 
 export const setupApp = (app: Express) => {
   app.use(express.json()); // middleware для парсинга JSON в теле запроса
+  app.use(cookieParser());
 
   // основной роут
   app.get('/', (req, res) => {
