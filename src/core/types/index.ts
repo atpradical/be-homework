@@ -1,4 +1,11 @@
 export type IdType = { id: string };
+
+export type UserDetails = {
+  id: string;
+  deviceId?: string;
+  tokenExp?: number;
+};
+
 export type PostIdType = { postId: string };
 
 export type ValidationErrorType = {

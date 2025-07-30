@@ -1,7 +1,7 @@
 import { usersQueryRepository } from '../../users/repositories/users.query-repository';
 import { LoginInputDto } from '../types/login-input.dto';
 import { WithId } from 'mongodb';
-import { jwtService } from '../adapters/jwt.service';
+import { jwtService, RefreshTokenPayload } from '../adapters/jwt.service';
 import { bcryptService } from '../adapters/bcrypt.service';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { RegistrationUserInputDto } from '../types/registration-user-input.dto';
@@ -16,11 +16,15 @@ import { add } from 'date-fns/add';
 import { RegistrationConfirmationInputDto } from '../types/registration-confirmation.input.dto';
 import { Nullable } from '../../../core';
 import { AuthTokens } from '../types/auth-tokens.type';
-import { tokenBlacklistRepository } from '../../token-blacklist/repositories/tokenBlacklist.repository';
+import { uaParserService } from '../adapters/ua-parser.service';
+import { authDeviceSessionService } from '../../auth-device-session/domain/auth-device-session.service';
+import { AuthDeviceSession } from '../../auth-device-session/domain/auth-device-session.entity';
 
 export const authService = {
   async login(
     dto: LoginInputDto,
+    ip: string,
+    userAgent?: string,
   ): Promise<ObjectResult<Nullable<{ accessToken: string; refreshToken: string }>>> {
     const result = await this.checkCredentials(dto);
 
@@ -32,7 +36,19 @@ export const authService = {
       });
     }
 
-    const { accessToken, refreshToken } = await this.generateTokens(result.data!._id.toString());
+    const userId = result.data!._id.toString();
+
+    const generateTokensResult = await this.generateTokensAndAuthSession(userId, ip, userAgent);
+
+    if (!generateTokensResult) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.InternalServerError,
+        errorMessage: 'InternalServerError',
+        extensions: 'Please try again later. If problem persists, contact support',
+      });
+    }
+
+    const { accessToken, refreshToken } = generateTokensResult;
 
     return ObjectResult.createSuccessResult({ accessToken, refreshToken });
   },
@@ -239,7 +255,7 @@ export const authService = {
     return ObjectResult.createSuccessResult({ userId: payload.userId });
   },
 
-  async checkRefreshToken(token: string): Promise<ObjectResult<{ userId: string }>> {
+  async checkRefreshToken(token: string): Promise<ObjectResult<RefreshTokenPayload>> {
     const payload = await jwtService.verifyRefreshToken(token);
 
     if (!payload) {
@@ -250,9 +266,20 @@ export const authService = {
       });
     }
 
-    const isTokenInBlackList = await tokenBlacklistRepository.findTokenInBlackList(token);
+    /* Проверяем версию токена в зарегистрированной сессии юзера
+     * const isTokenInBlackList = await tokenBlacklistRepository.findTokenInBlackList(token);
+     *
+     * if (isTokenInBlackList) {
+     *   return ObjectResult.createErrorResult({
+     *     status: ResultStatus.Unauthorized,
+     *     errorMessage: 'Unauthorized',
+     *     extensions: [{ field: 'token', message: 'Invalid token' }],
+     *   });
+     * }
+     */
+    const authDeviceSession = await authDeviceSessionService.findById(payload.deviceId);
 
-    if (isTokenInBlackList) {
+    if (!authDeviceSession) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.Unauthorized,
         errorMessage: 'Unauthorized',
@@ -260,7 +287,16 @@ export const authService = {
       });
     }
 
-    const user = await usersQueryRepository.findUserById(payload.userId);
+    // если даты exp разные - это значит, что токен или старый, или невалидный
+    if (authDeviceSession.expiresAt.toISOString() !== new Date(payload.exp * 1000).toISOString()) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.Unauthorized,
+        errorMessage: 'Unauthorized',
+        extensions: [{ field: 'token', message: 'Invalid token' }],
+      });
+    }
+
+    const user = await usersRepository.findUserById(payload.userId);
 
     if (!user) {
       return ObjectResult.createErrorResult({
@@ -270,31 +306,84 @@ export const authService = {
       });
     }
 
-    return ObjectResult.createSuccessResult({ userId: payload.userId });
+    return ObjectResult.createSuccessResult(payload);
   },
 
   async refreshToken(
-    id,
-    token,
+    userId: string,
+    deviceId: string,
+    tokenExp: number,
   ): Promise<ObjectResult<Nullable<{ accessToken: string; refreshToken: string }>>> {
-    const blacklistResult = await tokenBlacklistRepository.addTokenToBlackList(token);
+    /* Проверяем версию токена в зарегистрированной сессии юзера (вместо использования tokenBlacklistRepository)
+     *  const blacklistResult = await tokenBlacklistRepository.addTokenToBlackList(token);
+     *
+     *   if (!blacklistResult) {
+     *   return ObjectResult.createErrorResult({
+     *     status: ResultStatus.InternalServerError,
+     *     errorMessage: 'Database update failed',
+     *     extensions: 'Please try again later. If problem persists, contact support',
+     *   });
+     *  }
+     *
+     */
+    const authDeviceSession = await authDeviceSessionService.findById(userId);
 
-    if (!blacklistResult) {
+    if (
+      !authDeviceSession ||
+      authDeviceSession.expiresAt.toISOString() !== new Date(tokenExp * 1000).toISOString()
+    ) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.Unauthorized,
+        errorMessage: 'Unauthorized',
+        extensions: [{ field: 'token', message: 'Invalid token' }],
+      });
+    }
+
+    // Генерим новую пару токенов и обновляем expiresAt в сессии
+    const result = await this.generateTokensAndUpdateSession(userId, deviceId);
+
+    if (!result) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.InternalServerError,
-        errorMessage: 'Database update failed',
+        errorMessage: 'InternalServerError',
         extensions: 'Please try again later. If problem persists, contact support',
       });
     }
 
-    const { refreshToken, accessToken } = await this.generateTokens(id);
+    const { accessToken, refreshToken } = result;
 
     return ObjectResult.createSuccessResult({ accessToken, refreshToken });
   },
 
-  async generateTokens(id: string): Promise<AuthTokens> {
-    const accessToken = await jwtService.createToken(id.toString());
-    const refreshToken = await jwtService.createRefreshToken(id.toString());
+  async generateTokensAndAuthSession(
+    userId: string,
+    ip: string,
+    userAgent?: string,
+  ): Promise<AuthTokens | null> {
+    const deviceId = crypto.randomUUID();
+
+    const deviceName = await uaParserService
+      .parse(userAgent)
+      .then((data) => data.browser.name + ' ' + data.os.name);
+
+    const accessToken = await jwtService.createToken(userId);
+    const refreshToken = await jwtService.createRefreshToken(userId, deviceId);
+    const decodedRefreshToken = await jwtService.decodeToken(refreshToken);
+
+    const newDevice = AuthDeviceSession.create({
+      deviceId,
+      userId,
+      ip,
+      deviceName,
+      expiresAt: new Date(decodedRefreshToken.exp * 1000),
+      issuedAt: new Date(decodedRefreshToken.iat * 1000),
+    });
+
+    const sessionCreateResult = await authDeviceSessionService.create(newDevice);
+
+    if (sessionCreateResult.status !== ResultStatus.Success) {
+      return null;
+    }
 
     return {
       accessToken,
@@ -302,13 +391,47 @@ export const authService = {
     };
   },
 
-  async logout(token: string): Promise<Promise<Nullable<ObjectResult>>> {
-    const result = await tokenBlacklistRepository.addTokenToBlackList(token);
+  async generateTokensAndUpdateSession(
+    userId: string,
+    deviceId: string,
+  ): Promise<AuthTokens | null> {
+    const accessToken = await jwtService.createToken(userId);
+    const refreshToken = await jwtService.createRefreshToken(userId, deviceId);
+    const decodedRefreshToken = await jwtService.decodeToken(refreshToken);
 
-    if (!result) {
+    const updateResult = await authDeviceSessionService.updateExpiresAt(
+      deviceId,
+      new Date(decodedRefreshToken.exp * 1000),
+    );
+
+    if (updateResult.status !== ResultStatus.Success) {
+      return null;
+    }
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  },
+
+  async logout(deviceId: string, userId: string): Promise<ObjectResult> {
+    /* Удаляем сессию при logout (вместо использования tokenBlacklistRepository)
+     *const result = await tokenBlacklistRepository.addTokenToBlackList(token);
+     *
+     * if (!result) {
+     *   return ObjectResult.createErrorResult({
+     *     status: ResultStatus.InternalServerError,
+     *     errorMessage: 'Database update failed',
+     *     extensions: 'Please try again later. If problem persists, contact support',
+     *   });
+     *  }
+     * */
+    const deleteResult = await authDeviceSessionService.deleteByDeviceId(deviceId, userId);
+
+    if (deleteResult.status !== ResultStatus.Success) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.InternalServerError,
-        errorMessage: 'Database update failed',
+        errorMessage: 'InternalServerError',
         extensions: 'Please try again later. If problem persists, contact support',
       });
     }
