@@ -5,6 +5,9 @@ import { appConfig } from './core/config';
 
 const bootstrap = async () => {
   const app = express();
+  //Для получения корректного ip-адреса из req.ip
+  app.set('trust proxy', true);
+
   setupApp(app);
   const PORT = appConfig.PORT;
 
@@ -14,6 +17,7 @@ const bootstrap = async () => {
   app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}`);
   });
+
   return app;
 };
 

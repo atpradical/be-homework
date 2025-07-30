@@ -20,7 +20,7 @@ export const blogsService = {
       description: dto.description,
       websiteUrl: dto.websiteUrl,
       isMembership: false,
-      createdAt: new Date(), // TODO: вопрос про { $createdAt: true }
+      createdAt: new Date(),
     };
 
     return blogsRepository.create(newBlog);

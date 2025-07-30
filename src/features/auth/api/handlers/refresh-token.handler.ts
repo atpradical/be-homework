@@ -1,6 +1,6 @@
-import { RequestWithUserId } from '../../../../core/types/requests';
+import { RequestWithUserDetails } from '../../../../core/types/requests';
 import { authService } from '../../domain/auth.service';
-import { HttpStatus, IdType } from '../../../../core';
+import { HttpStatus, UserDetails } from '../../../../core';
 import {
   AccessTokenResponse,
   ErrorMessagesResponse,
@@ -11,13 +11,14 @@ import { resultCodeToHttpException } from '../../../../core/result/resultCodeToH
 import { ResultStatus } from '../../../../core/result/resultCode';
 
 export async function refreshTokenHandler(
-  req: RequestWithUserId<IdType>,
+  req: RequestWithUserDetails<UserDetails>,
   res: ResponseWith<AccessTokenResponse | ErrorMessagesResponse>,
 ) {
   const userId = req.user?.id;
-  const token = req.refreshToken;
+  const deviceId = req.user.deviceId;
+  const tokenExp = req.user.tokenExp;
 
-  const result = await authService.refreshToken(userId, token);
+  const result = await authService.refreshToken(userId, deviceId, tokenExp);
 
   if (result.status !== ResultStatus.Success) {
     res

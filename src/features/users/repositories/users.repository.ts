@@ -33,13 +33,13 @@ export const usersRepository = {
     return { items, totalCount };
   },
 
-  async findUserById(_id: ObjectId): Promise<WithId<User> | null> {
-    return await usersCollection.findOne({ _id });
+  async findUserById(id: string): Promise<WithId<User> | null> {
+    return await usersCollection.findOne({ _id: new ObjectId(id) });
   },
 
-  async create(newUser: User): Promise<ObjectId> {
+  async create(newUser: User): Promise<string> {
     const insertResult = await usersCollection.insertOne(newUser);
-    return insertResult.insertedId;
+    return insertResult.insertedId.toString();
   },
 
   async update(id: ObjectId, dto: Partial<User>): Promise<boolean> {

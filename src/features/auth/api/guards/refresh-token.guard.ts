@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { HttpStatus, IdType } from '../../../../core';
+import { HttpStatus, UserDetails } from '../../../../core';
 import { authService } from '../../domain/auth.service';
 import { ResultStatus } from '../../../../core/result/resultCode';
 
@@ -18,9 +18,13 @@ export async function refreshTokenGuard(req: Request, res: Response, next: NextF
     return;
   }
 
-  if (result.data.userId) {
-    // прокидываем userId в request для других middleWare
-    req.user = { id: result.data.userId } as IdType;
+  if (result.data) {
+    // прокидываем userId и deviceId в request для других middleWare
+    req.user = {
+      id: result.data.userId,
+      deviceId: result.data.deviceId,
+      tokenExp: result.data.exp,
+    } as UserDetails;
     req.refreshToken = token;
     next();
     return;

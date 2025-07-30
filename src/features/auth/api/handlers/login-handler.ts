@@ -8,7 +8,9 @@ import { resultCodeToHttpException } from '../../../../core/result/resultCodeToH
 import { appConfig } from '../../../../core/config';
 
 export async function loginHandler(req: RequestWithBody<LoginInputDto>, res: Response) {
-  const result = await authService.login(req.body);
+  const ip = req.ip;
+  const userAgent = req.get('User-Agent');
+  const result = await authService.login(req.body, ip, userAgent);
 
   if (result.status !== ResultStatus.Success) {
     res.status(resultCodeToHttpException(result.status)).send(result.extensions);
@@ -18,7 +20,7 @@ export async function loginHandler(req: RequestWithBody<LoginInputDto>, res: Res
   res
     .status(HttpStatus.Ok)
     .cookie('refreshToken', result.data.refreshToken, {
-      path: '/auth',
+      path: '/',
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
