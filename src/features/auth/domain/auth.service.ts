@@ -399,7 +399,7 @@ export const authService = {
     const refreshToken = await jwtService.createRefreshToken(userId, deviceId);
     const decodedRefreshToken = await jwtService.decodeToken(refreshToken);
 
-    const updateResult = await authDeviceSessionService.updateExpiresAt(
+    const updateResult = await authDeviceSessionService.updateDates(
       deviceId,
       new Date(decodedRefreshToken.iat * 1000),
       new Date(decodedRefreshToken.exp * 1000),

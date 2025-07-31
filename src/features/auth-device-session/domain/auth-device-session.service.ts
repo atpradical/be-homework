@@ -22,8 +22,8 @@ export const authDeviceSessionService = {
     return authDeviceSessionRepository.findById(deviceId);
   },
 
-  async updateExpiresAt(deviceId: string, issuedAt: Date, expiresAt: Date): Promise<ObjectResult> {
-    const result = authDeviceSessionRepository.updateExpiresAt(deviceId, issuedAt, expiresAt);
+  async updateDates(deviceId: string, issuedAt: Date, expiresAt: Date): Promise<ObjectResult> {
+    const result = authDeviceSessionRepository.updateDates(deviceId, issuedAt, expiresAt);
 
     if (!result) {
       return ObjectResult.createErrorResult({

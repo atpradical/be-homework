@@ -12,7 +12,7 @@ export const authDeviceSessionRepository = {
     return await authDeviceSessionCollection.findOne({ deviceId });
   },
 
-  async updateExpiresAt(deviceId: string, issuedAt: Date, expiresAt: Date): Promise<boolean> {
+  async updateDates(deviceId: string, issuedAt: Date, expiresAt: Date): Promise<boolean> {
     const updateResult = await authDeviceSessionCollection.updateOne(
       { deviceId },
       { $set: { issuedAt, expiresAt } },
