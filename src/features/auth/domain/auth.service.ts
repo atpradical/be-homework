@@ -401,6 +401,7 @@ export const authService = {
 
     const updateResult = await authDeviceSessionService.updateExpiresAt(
       deviceId,
+      new Date(decodedRefreshToken.iat * 1000),
       new Date(decodedRefreshToken.exp * 1000),
     );
 
