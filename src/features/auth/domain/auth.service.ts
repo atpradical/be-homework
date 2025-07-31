@@ -326,7 +326,7 @@ export const authService = {
      *  }
      *
      */
-    const authDeviceSession = await authDeviceSessionService.findById(userId);
+    const authDeviceSession = await authDeviceSessionService.findById(deviceId);
 
     if (
       !authDeviceSession ||
