@@ -5,6 +5,7 @@ import { Blog } from '../features/blogs/types';
 import { Post } from '../features/posts/types';
 import { User } from '../features/users/domain/user.entity';
 import { AuthDeviceSession } from '../features/auth-device-session/domain/auth-device-session.entity';
+import { IpRestricted } from '../features/ip-restriction/domain/ip-restricted.entity';
 
 const BLOG_COLLECTION_NAME = 'blogs';
 const POST_COLLECTION_NAME = 'posts';
@@ -12,6 +13,7 @@ const USERS_COLLECTION_NAME = 'users';
 const COMMENTS_COLLECTION_NAME = 'comments';
 const REFRESH_TOKEN_BLACKLIST_COLLECTION_NAME = 'refresh-token_blacklist';
 const AUTH_DEVICE_SESSION_COLLECTION_NAME = 'auth_device_session';
+const IP_RESTRICTION_COLLECTION_NAME = 'ip_restriction';
 
 export let client: MongoClient;
 export let blogsCollection: Collection<Blog>;
@@ -20,6 +22,7 @@ export let usersCollection: Collection<User>;
 export let commentsCollection: Collection<CommentDB>;
 export let authDeviceSessionCollection: Collection<AuthDeviceSession>;
 export let tokenBlacklistCollection: Collection<{ token: string; createdAt: Date }>;
+export let ipRestrictedCollection: Collection<IpRestricted>;
 
 // Подключения к бд
 export async function runDB(url: string): Promise<void> {
@@ -38,6 +41,7 @@ export async function runDB(url: string): Promise<void> {
     token: string;
     createdAt: Date; // для mongo TTL
   }>(REFRESH_TOKEN_BLACKLIST_COLLECTION_NAME);
+  ipRestrictedCollection = db.collection<IpRestricted>(IP_RESTRICTION_COLLECTION_NAME);
 
   try {
     await client.connect();
@@ -76,9 +80,19 @@ export async function dropDb(): Promise<void> {
 }
 
 // для  TTL
-export async function setupTokenBlacklistIndexes() {
+export async function setupDBIndexes() {
   await tokenBlacklistCollection.createIndex(
     { createdAt: 1 }, // 1 - сортировка asc
     { expireAfterSeconds: appConfig.BLACKLIST_TTL },
+  );
+
+  await authDeviceSessionCollection.createIndex(
+    { expiresAt: 1 }, // 1 - сортировка asc
+    { expireAfterSeconds: appConfig.AUTH_DEVICE_SESSION_TTL },
+  );
+
+  await ipRestrictedCollection.createIndex(
+    { createdAt: 1 }, // 1 - сортировка asc
+    { expireAfterSeconds: appConfig.IP_RESTRICTED_TTL },
   );
 }

@@ -13,6 +13,8 @@ export const appConfig = {
   RT_TIME: Number(process.env.RT_TIME) || 20, // Преобразуем в число
   RT_COOKIE_MAX_AGE: 25, // Преобразуем в число
   BLACKLIST_TTL: 24 * 60 * 60,
+  AUTH_DEVICE_SESSION_TTL: 24 * 60 * 60,
+  IP_RESTRICTED_TTL: 24 * 60 * 60,
 
   EMAIL: process.env.EMAIL as string,
   EMAIL_PASS: process.env.EMAIL_PASS as string,
