@@ -107,6 +107,8 @@ describe('Multi Devices test', () => {
   });
 
   it('Update RefreshToken for device 1', async () => {
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
+
     const response = await request(app)
       .post('/auth/refresh-token')
       .set('Cookie', [`refreshToken=${userDevices['device1'].token}`])
@@ -157,7 +159,7 @@ describe('Multi Devices test', () => {
     }
 
     // LastActiveDate девайса 1 должна измениться
-    expect(deviceList[0].lastActiveDate === deviceListUpdated[0].lastActiveDate).toBeFalsy();
+    expect(deviceList[0].lastActiveDate).not.toBe(deviceListUpdated[0].lastActiveDate);
 
     // LastActiveDate остальных девайсов (2,3,4) не должны измениться
     for (let i = 1; i < deviceListUpdated.length; i++) {

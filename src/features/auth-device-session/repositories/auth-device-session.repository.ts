@@ -12,11 +12,14 @@ export const authDeviceSessionRepository = {
     return await authDeviceSessionCollection.findOne({ deviceId });
   },
 
-  async updateExpiresAt(deviceId: string, expiresAt: Date): Promise<boolean> {
+  async updateExpiresAt(deviceId: string, issuedAt: Date, expiresAt: Date): Promise<boolean> {
     const updateResult = await authDeviceSessionCollection.updateOne(
       { deviceId },
-      { $set: { expiresAt } },
+      { $set: { issuedAt, expiresAt } },
     );
+
+    console.log('expiresAt', expiresAt);
+    console.log('updateResult', updateResult);
 
     return updateResult.matchedCount >= 1;
   },
