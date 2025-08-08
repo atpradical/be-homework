@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { blogsService } from '../../domain/blogs.service';
 import { errorsHandler } from '../../../../core/errors/errors.handler';
 import { HttpStatus } from '../../../../core';
 import { BlogQueryInput } from '../../types/blog-query.input';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../../core/helpers/set-default-sort-and-pagination';
 import { mapToBlogListPaginatedOutput } from '../../mappers/map-to-blog-list-paginated-output.util';
+import { blogsService } from '../../../../core/composition-root';
 
 export async function getBlogListHandler(req: Request, res: Response) {
   try {

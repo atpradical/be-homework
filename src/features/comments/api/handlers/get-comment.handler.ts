@@ -1,9 +1,9 @@
 import { Response } from 'express';
 import { HttpStatus, IdType } from '../../../../core';
-import { commentsQueryRepository } from '../../repositories/comments.query-repository';
 import { mapToCommentViewModel } from '../../mappers/map-to-comment-view-model';
 import { RequestWithParams } from '../../../../core/types/requests';
 import { CommentView } from '../../types';
+import { commentsQueryRepository } from '../../../../core/composition-root';
 
 export async function getCommentHandler(
   req: RequestWithParams<IdType>,

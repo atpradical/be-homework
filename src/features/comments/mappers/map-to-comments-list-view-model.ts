@@ -1,9 +1,9 @@
-import { CommentDB } from '../types';
 import { WithId } from 'mongodb';
 import { CommentListPaginatedOutput } from '../types/comment-list-paginated.output';
+import { Comment } from '../domain/comment.entity';
 
 export function mapToCommentsListViewModel(
-  comments: WithId<CommentDB>[],
+  comments: WithId<Comment>[],
   pagination: {
     pageNumber: number;
     pageSize: number;

@@ -1,10 +1,10 @@
 import { RequestWithBody } from '../../../../core/types/requests';
 import { RegistrationConfirmationInputDto } from '../../types/registration-confirmation.input.dto';
-import { authService } from '../../domain/auth.service';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { HttpStatus } from '../../../../core';
 import { ErrorMessagesResponse, ResponseWith } from '../../../../core/types/responses';
+import { authService } from '../../../../core/composition-root';
 
 export async function registrationConfirmationHandler(
   req: RequestWithBody<RegistrationConfirmationInputDto>,

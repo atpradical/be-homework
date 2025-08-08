@@ -3,13 +3,13 @@ import { HttpStatus } from '../../../../core';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../../core/helpers/set-default-sort-and-pagination';
 import { PaginationAndSorting } from '../../../../core/types/pagination-and-sorting';
 import { PostSortField } from '../../../posts/types/post-sort-field';
-import { postsService } from '../../../posts/domain/posts.service';
 import { mapToPostListPaginatedOutput } from '../../../posts/mappers/map-to-post-list-paginated-output.util';
 import { RequestWithParamsAndQuery } from '../../../../core/types/requests';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { PostListPaginatedOutput } from '../../../posts/types/post-list-paginated.output';
 import { ExtensionType } from '../../../../core/result/object-result.entity';
+import { postsService } from '../../../../core/composition-root';
 
 export async function getPostListByBlogIdHandler(
   req: RequestWithParamsAndQuery<{ blogId: string }, PaginationAndSorting<PostSortField>>, // Request<{ blogId: string }, {}, {}, PaginationAndSorting<PostSortField>>,

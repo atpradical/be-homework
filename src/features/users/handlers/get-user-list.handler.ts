@@ -4,7 +4,7 @@ import { errorsHandler } from '../../../core/errors/errors.handler';
 import { UserQueryInput } from '../types/user-query.input';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../core/helpers/set-default-sort-and-pagination';
 import { mapToUserListPaginatedOutput } from '../mappers/map-to-user-list-paginated-output';
-import { usersService } from '../domain/users.service';
+import { usersService } from '../../../core/composition-root';
 
 export async function getUsersListHandler(req: Request, res: Response) {
   try {

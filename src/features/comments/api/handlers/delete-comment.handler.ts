@@ -1,10 +1,10 @@
 import { Response } from 'express';
 import { RequestWithParamsAndBody } from '../../../../core/types/requests';
 import { HttpStatus, IdType } from '../../../../core';
-import { commentsService } from '../../domain/comments.service';
 import { CommentInputDto } from '../../types/comment.input.dto';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
+import { commentsService } from '../../../../core/composition-root';
 
 export async function deleteCommentHandler(
   req: RequestWithParamsAndBody<IdType, CommentInputDto>,

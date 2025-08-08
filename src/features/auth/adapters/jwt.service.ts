@@ -3,18 +3,18 @@ import { appConfig } from '../../../core/config';
 
 export type RefreshTokenPayload = JwtPayload & { userId: string; deviceId: string };
 
-export const jwtService = {
+export class JwtService {
   async createToken(userId: string): Promise<string> {
     return jwt.sign({ userId }, appConfig.AC_SECRET, {
       expiresIn: appConfig.AC_TIME,
     });
-  },
+  }
 
   async createRefreshToken(userId: string, deviceId: string): Promise<string> {
     return jwt.sign({ userId, deviceId }, appConfig.RT_SECRET, {
       expiresIn: appConfig.RT_TIME,
     });
-  },
+  }
 
   async decodeToken(token: string): Promise<any> {
     try {
@@ -23,7 +23,7 @@ export const jwtService = {
       console.error("Can't decode token", e);
       return null;
     }
-  },
+  }
 
   async verifyToken(token: string): Promise<{ userId: string } | null> {
     try {
@@ -32,7 +32,7 @@ export const jwtService = {
       console.error('Token verify some error');
       return null;
     }
-  },
+  }
 
   async verifyRefreshToken(token: string): Promise<RefreshTokenPayload | null> {
     try {
@@ -41,5 +41,5 @@ export const jwtService = {
       console.error('Token verify some error');
       return null;
     }
-  },
-};
+  }
+}

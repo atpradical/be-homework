@@ -4,7 +4,7 @@ import { errorsHandler } from '../../../../core/errors/errors.handler';
 import { PostQueryInput } from '../../types/post-query.input';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../../core/helpers/set-default-sort-and-pagination';
 import { mapToPostListPaginatedOutput } from '../../mappers/map-to-post-list-paginated-output.util';
-import { postsQueryRepository } from '../../repositories/posts.query-repository';
+import { postsQueryRepository } from '../../../../core/composition-root';
 
 export async function getPostListHandler(req: Request, res: Response) {
   try {

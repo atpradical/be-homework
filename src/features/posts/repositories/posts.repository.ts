@@ -1,11 +1,11 @@
 import { PostInputDto } from '../types/post-input.dto';
-import { Post } from '../types';
 import { postsCollection } from '../../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
 import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 import { PostQueryInput } from '../types/post-query.input';
+import { Post } from '../domain/post.etntity';
 
-export const postsRepository = {
+export class PostsRepository {
   async findAll(queryDto: PostQueryInput): Promise<{ items: WithId<Post>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
 
@@ -21,7 +21,7 @@ export const postsRepository = {
     const totalCount = await postsCollection.countDocuments();
 
     return { items, totalCount };
-  },
+  }
 
   async findById(id: string): Promise<WithId<Post>> {
     const post = await postsCollection.findOne({ _id: new ObjectId(id) });
@@ -31,12 +31,12 @@ export const postsRepository = {
     }
 
     return post;
-  },
+  }
 
   async create(newPost: Post): Promise<WithId<Post>> {
     const insertResult = await postsCollection.insertOne(newPost);
     return { ...newPost, _id: insertResult.insertedId };
-  },
+  }
 
   async update(id: string, dto: PostInputDto): Promise<boolean> {
     const updateResult = await postsCollection.updateOne(
@@ -52,7 +52,7 @@ export const postsRepository = {
     );
 
     return updateResult.matchedCount === 1;
-  },
+  }
 
   async delete(id: string): Promise<boolean> {
     const deleteResult = await postsCollection.deleteOne({
@@ -60,7 +60,7 @@ export const postsRepository = {
     });
 
     return deleteResult.deletedCount === 1;
-  },
+  }
 
   async findPostsByBlog(
     blogId: string,
@@ -82,5 +82,5 @@ export const postsRepository = {
     const totalCount = await postsCollection.countDocuments({ blogId: blogId });
 
     return { items, totalCount };
-  },
-};
+  }
+}

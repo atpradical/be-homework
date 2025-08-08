@@ -2,12 +2,12 @@ import { Response } from 'express';
 import { HttpStatus } from '../../../../core';
 import { PostInputDto } from '../../types/post-input.dto';
 import { mapToPostViewModel } from '../../mappers/map-to-post-view-model';
-import { postsService } from '../../domain/posts.service';
 import { RequestWithParamsAndBody } from '../../../../core/types/requests';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { PostViewModel } from '../../types';
 import { ExtensionType } from '../../../../core/result/object-result.entity';
+import { postsService } from '../../../../core/composition-root';
 
 export async function createPostForBlogHandler(
   req: RequestWithParamsAndBody<{ blogId: string }, PostInputDto>,

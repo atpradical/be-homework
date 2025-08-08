@@ -1,9 +1,8 @@
-import { nodemailerService } from '../../src/features/auth/adapters/nodemailer.service';
-import { authService } from '../../src/features/auth/domain/auth.service';
 import { testSeeder } from './test.seeder';
 import { ResultStatus } from '../../src/core/result/resultCode';
 import { client, dropDb, runDB, stopDb } from '../../src/db/mongo.db';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { authService, nodemailerService } from '../../src/core/composition-root';
 
 describe('AUTH-INTEGRATION', () => {
   beforeAll(async () => {

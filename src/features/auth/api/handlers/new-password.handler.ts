@@ -1,15 +1,13 @@
 import { Response } from 'express';
-import { HttpStatus, UserDetails } from '../../../../core';
+import { HttpStatus } from '../../../../core';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { ResultStatus } from '../../../../core/result/resultCode';
-import { RequestWithUserDetails } from '../../../../core/types/requests';
 import { authService } from '../../../../core/composition-root';
+import { RequestWithBody } from '../../../../core/types/requests';
+import { NewPasswordInputDto } from '../../types/new-password-input.dto';
 
-export async function logoutHandler(req: RequestWithUserDetails<UserDetails>, res: Response) {
-  const userId = req.user.id;
-  const deviceId = req.user.deviceId;
-
-  const result = await authService.logout(deviceId, userId);
+export async function newPasswordHandler(req: RequestWithBody<NewPasswordInputDto>, res: Response) {
+  const result = await authService.updatePassword(req.body);
 
   if (result.status !== ResultStatus.Success) {
     res
@@ -18,6 +16,6 @@ export async function logoutHandler(req: RequestWithUserDetails<UserDetails>, re
 
     return;
   }
-  res.status(HttpStatus.NoContent).clearCookie('refreshToken').send();
+  res.status(HttpStatus.NoContent);
   return;
 }

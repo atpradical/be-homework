@@ -1,5 +1,4 @@
 import { RequestWithUserDetails } from '../../../../core/types/requests';
-import { authService } from '../../domain/auth.service';
 import { HttpStatus, UserDetails } from '../../../../core';
 import {
   AccessTokenResponse,
@@ -9,6 +8,7 @@ import {
 import { appConfig } from '../../../../core/config';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { ResultStatus } from '../../../../core/result/resultCode';
+import { authService } from '../../../../core/composition-root';
 
 export async function refreshTokenHandler(
   req: RequestWithUserDetails<UserDetails>,

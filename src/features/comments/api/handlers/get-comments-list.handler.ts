@@ -1,12 +1,11 @@
 import { Response } from 'express';
 import { HttpStatus, PostIdType } from '../../../../core';
-import { commentsQueryRepository } from '../../repositories/comments.query-repository';
 import { mapToCommentsListViewModel } from '../../mappers/map-to-comments-list-view-model';
 import { CommentQueryInput } from '../../types/comment-query.input';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../../core/helpers/set-default-sort-and-pagination';
-import { postsQueryRepository } from '../../../posts/repositories/posts.query-repository';
 import { CommentListPaginatedOutput } from '../../types/comment-list-paginated.output';
 import { RequestWithParamsAndQuery } from '../../../../core/types/requests';
+import { commentsQueryRepository, postsQueryRepository } from '../../../../core/composition-root';
 
 export async function getCommentsListHandler(
   req: RequestWithParamsAndQuery<PostIdType, CommentQueryInput>,

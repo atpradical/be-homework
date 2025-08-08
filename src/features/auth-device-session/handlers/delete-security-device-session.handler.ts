@@ -1,9 +1,9 @@
 import { Response } from 'express';
 import { HttpStatus, UserDetails } from '../../../core';
-import { authDeviceSessionService } from '../domain/auth-device-session.service';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../core/result/resultCodeToHttpException';
 import { RequestWithParamsAndUserDetails } from '../../../core/types/requests';
+import { authDeviceSessionService } from '../../../core/composition-root';
 
 export async function deleteSecurityDeviceSessionHandler(
   req: RequestWithParamsAndUserDetails<{ id: string }, UserDetails>,

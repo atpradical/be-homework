@@ -1,29 +1,37 @@
 import { PostInputDto } from '../types/post-input.dto';
-import { Post } from '../types';
 import { WithId } from 'mongodb';
-import { postsRepository } from '../repositories/posts.repository';
-import { blogsService } from '../../blogs/domain/blogs.service';
+import { PostsRepository } from '../repositories/posts.repository';
 import { PostQueryInput } from '../types/post-query.input';
-import { postsQueryRepository } from '../repositories/posts.query-repository';
-import { CommentDB } from '../../comments/types';
-import { usersQueryRepository } from '../../users/repositories/users.query-repository';
 import { ResultStatus } from '../../../core/result/resultCode';
-import { commentsRepository } from '../../comments/repositories/comments.repository';
 import { CommentInputDto } from '../../comments/types/comment.input.dto';
-import { blogsQueryRepository } from '../../blogs/repositories/blogs.query-repository';
 import { ObjectResult } from '../../../core/result/object-result.entity';
+import { usersQueryRepository } from '../../../core/composition-root';
+import { BlogsService } from '../../blogs/domain/blogs.service';
+import { PostsQueryRepository } from '../repositories/posts.query-repository';
+import { BlogsQueryRepository } from '../../blogs/repositories/blogs.query-repository';
+import { CommentsRepository } from '../../comments/repositories/comments.repository';
+import { Post } from './post.etntity';
+import { Comment } from '../../comments/domain/comment.entity';
 
-export const postsService = {
+export class PostsService {
+  constructor(
+    private postsRepository: PostsRepository,
+    private postsQueryRepository: PostsQueryRepository,
+    private blogsService: BlogsService,
+    private blogsQueryRepository: BlogsQueryRepository,
+    private commentsRepository: CommentsRepository,
+  ) {}
+
   async findAll(queryDto: PostQueryInput): Promise<{ items: WithId<Post>[]; totalCount: number }> {
-    return postsQueryRepository.findAll(queryDto);
-  },
+    return this.postsQueryRepository.findAll(queryDto);
+  }
 
   async findById(id: string): Promise<WithId<Post>> {
-    return postsQueryRepository.findById(id);
-  },
+    return this.postsQueryRepository.findById(id);
+  }
 
   async create(dto: PostInputDto): Promise<ObjectResult<WithId<Post> | null>> {
-    const blog = await blogsService.findById(dto.blogId);
+    const blog = await this.blogsService.findById(dto.blogId);
 
     if (!blog) {
       return ObjectResult.createErrorResult({
@@ -33,23 +41,21 @@ export const postsService = {
       });
     }
 
-    //todo: заменить на класс
-    const newPost = {
+    const newPost = Post.create({
       title: dto.title,
       shortDescription: dto.shortDescription,
       content: dto.content,
       blogId: dto.blogId,
       blogName: blog?.name,
-      createdAt: new Date(),
-    };
+    });
 
-    const result = await postsRepository.create(newPost);
+    const result = await this.postsRepository.create(newPost);
 
     return ObjectResult.createSuccessResult(result);
-  },
+  }
 
   async update(id: string, dto: PostInputDto): Promise<ObjectResult> {
-    const post = await postsQueryRepository.findById(id);
+    const post = await this.postsQueryRepository.findById(id);
 
     if (!post) {
       return ObjectResult.createErrorResult({
@@ -59,7 +65,7 @@ export const postsService = {
       });
     }
 
-    const result = await postsRepository.update(id, dto);
+    const result = await this.postsRepository.update(id, dto);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -70,10 +76,10 @@ export const postsService = {
     }
 
     return ObjectResult.createSuccessResult(null);
-  },
+  }
 
   async delete(id: string): Promise<ObjectResult> {
-    const post = await postsQueryRepository.findById(id);
+    const post = await this.postsQueryRepository.findById(id);
 
     if (!post) {
       return ObjectResult.createErrorResult({
@@ -83,7 +89,7 @@ export const postsService = {
       });
     }
 
-    const result = await postsRepository.delete(id);
+    const result = await this.postsRepository.delete(id);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -94,7 +100,7 @@ export const postsService = {
     }
 
     return ObjectResult.createSuccessResult(null);
-  },
+  }
 
   async findPostsByBlog({
     blogId,
@@ -103,7 +109,7 @@ export const postsService = {
     blogId: string;
     queryDto: PostQueryInput;
   }): Promise<ObjectResult<{ items: WithId<Post>[]; totalCount: number }>> {
-    const blog = await blogsQueryRepository.findById(blogId);
+    const blog = await this.blogsQueryRepository.findById(blogId);
 
     if (!blog) {
       return ObjectResult.createErrorResult({
@@ -113,10 +119,10 @@ export const postsService = {
       });
     }
 
-    const result = await postsQueryRepository.findPostsByBlog(blogId, queryDto);
+    const result = await this.postsQueryRepository.findPostsByBlog(blogId, queryDto);
 
     return ObjectResult.createSuccessResult(result);
-  },
+  }
 
   async createPostForBlog({
     blogId,
@@ -125,7 +131,7 @@ export const postsService = {
     blogId: string;
     dto: Omit<PostInputDto, 'blogId'>;
   }): Promise<ObjectResult<WithId<Post>>> {
-    const blog = await blogsQueryRepository.findById(blogId);
+    const blog = await this.blogsQueryRepository.findById(blogId);
 
     if (!blog) {
       return ObjectResult.createErrorResult({
@@ -135,17 +141,15 @@ export const postsService = {
       });
     }
 
-    //todo: заменить на класс
-    const newPost = {
+    const newPost = Post.create({
       title: dto.title,
       shortDescription: dto.shortDescription,
       content: dto.content,
       blogId: blogId,
-      blogName: blog?.name,
-      createdAt: new Date(),
-    };
+      blogName: blog.name,
+    });
 
-    const result = await postsRepository.create(newPost);
+    const result = await this.postsRepository.create(newPost);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -156,13 +160,13 @@ export const postsService = {
     }
 
     return ObjectResult.createSuccessResult(result);
-  },
+  }
 
   async createComment({
     userId,
     postId,
     dto,
-  }: CreateCommentArgs): Promise<ObjectResult<WithId<CommentDB | null>>> {
+  }: CreateCommentArgs): Promise<ObjectResult<WithId<Comment | null>>> {
     const userData = await usersQueryRepository.findUserById(userId);
 
     if (!userData) {
@@ -173,7 +177,7 @@ export const postsService = {
       });
     }
 
-    const postData = await postsQueryRepository.findById(postId);
+    const postData = await this.postsQueryRepository.findById(postId);
 
     if (!postData) {
       return ObjectResult.createErrorResult({
@@ -183,18 +187,17 @@ export const postsService = {
       });
     }
 
-    //todo:заменить на класс
-    const newComment: CommentDB = {
+    const newComment = Comment.create({
       commentatorInfo: {
         userId: userData._id.toString(),
         userLogin: userData.login,
       },
-      postId: postData._id,
+      postId: postData._id.toString(),
       content: dto.content,
       createdAt: new Date(),
-    };
+    });
 
-    const result = await commentsRepository.create(newComment);
+    const result = await this.commentsRepository.create(newComment);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -205,8 +208,8 @@ export const postsService = {
     }
 
     return ObjectResult.createSuccessResult(result);
-  },
-};
+  }
+}
 
 //todo: вынести в отдельный файл
 type CreateCommentArgs = {

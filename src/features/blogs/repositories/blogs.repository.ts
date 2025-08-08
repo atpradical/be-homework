@@ -5,7 +5,7 @@ import { ObjectId, WithId } from 'mongodb';
 import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 import { BlogQueryInput } from '../types/blog-query.input';
 
-export const blogsRepository = {
+export class BlogsRepository {
   async findAll(queryDto: BlogQueryInput): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection, searchWebsiteUrlTerm, searchNameTerm } =
       queryDto;
@@ -31,7 +31,7 @@ export const blogsRepository = {
     const totalCount = await blogsCollection.countDocuments(filter);
 
     return { items, totalCount };
-  },
+  }
 
   async findById(id: string): Promise<WithId<Blog>> {
     const blog = await blogsCollection.findOne({ _id: new ObjectId(id) });
@@ -41,12 +41,12 @@ export const blogsRepository = {
     }
 
     return blog;
-  },
+  }
 
   async create(newBlog: Blog): Promise<WithId<Blog>> {
     const insertResult = await blogsCollection.insertOne(newBlog);
     return { ...newBlog, _id: insertResult.insertedId };
-  },
+  }
 
   async update(id: string, dto: BlogInputDto): Promise<void> {
     const blog = await blogsCollection.findOne({ _id: new ObjectId(id) });
@@ -72,7 +72,7 @@ export const blogsRepository = {
     }
 
     return;
-  },
+  }
 
   async delete(id: string): Promise<void> {
     const blog = await blogsCollection.findOne({ _id: new ObjectId(id) });
@@ -91,5 +91,5 @@ export const blogsRepository = {
     }
 
     return;
-  },
-};
+  }
+}

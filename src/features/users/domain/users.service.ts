@@ -1,16 +1,21 @@
 import { UserQueryInput } from '../types/user-query.input';
 import { WithId } from 'mongodb';
-import { usersRepository } from '../repositories/users.repository';
+import { UsersRepository } from '../repositories/users.repository';
 import { UserInputDto } from '../types/user-input.dto';
-import { usersQueryRepository } from '../repositories/users.query-repository';
 import { DomainError } from '../../../core/errors/domain.error';
 import { User } from './user.entity';
-import { bcryptService } from '../../auth/adapters/bcrypt.service';
+import { BcryptService } from '../../auth/adapters/bcrypt.service';
+import { usersQueryRepository } from '../../../core/composition-root';
 
-export const usersService = {
+export class UsersService {
+  constructor(
+    private usersRepository: UsersRepository,
+    private bcrypt: BcryptService,
+  ) {}
+
   async findAll(queryDto: UserQueryInput): Promise<{ items: WithId<User>[]; totalCount: number }> {
     return usersQueryRepository.findAll(queryDto);
-  },
+  }
 
   async create(dto: UserInputDto): Promise<WithId<User> | null> {
     const existUserWithSameEmail = await usersQueryRepository.findUserByEmail(dto.email);
@@ -25,16 +30,16 @@ export const usersService = {
       throw new DomainError('login should be unique', 'login');
     }
 
-    const passwordHash = await bcryptService.generateHash(dto.password, 10);
+    const passwordHash = await this.bcrypt.generateHash(dto.password, 10);
 
     const newUser: User = User.createSuperUser(dto.login, dto.email, passwordHash);
 
-    const insertedUserId = await usersRepository.create(newUser);
+    const insertedUserId = await this.usersRepository.create(newUser);
 
-    return usersRepository.findUserById(insertedUserId);
-  },
+    return this.usersRepository.findUserById(insertedUserId);
+  }
 
   async delete(id: string): Promise<void> {
-    return usersRepository.delete(id);
-  },
-};
+    return this.usersRepository.delete(id);
+  }
+}

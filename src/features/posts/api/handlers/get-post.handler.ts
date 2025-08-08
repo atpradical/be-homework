@@ -1,9 +1,9 @@
 import { Response } from 'express';
 import { HttpStatus, IdType } from '../../../../core';
 import { mapToPostViewModel } from '../../mappers/map-to-post-view-model';
-import { postsQueryRepository } from '../../repositories/posts.query-repository';
 import { RequestWithParams } from '../../../../core/types/requests';
 import { PostViewModel } from '../../types';
+import { postsQueryRepository } from '../../../../core/composition-root';
 
 export async function getPostHandler(
   req: RequestWithParams<IdType>,

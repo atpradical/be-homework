@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '../../../../core';
 import { BlogInputDto } from '../../types/blog-input.dto';
-import { blogsService } from '../../domain/blogs.service';
 import { errorsHandler } from '../../../../core/errors/errors.handler';
+import { blogsService } from '../../../../core/composition-root';
 
 export async function updateBlogHandler(
   req: Request<{ id: string }, {}, BlogInputDto>,

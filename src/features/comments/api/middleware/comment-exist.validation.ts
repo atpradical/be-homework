@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus, IdType } from '../../../../core';
-import { commentsQueryRepository } from '../../repositories/comments.query-repository';
+import { commentsQueryRepository } from '../../../../core/composition-root';
 
 export async function commentExistValidation(
   req: Request<IdType>,

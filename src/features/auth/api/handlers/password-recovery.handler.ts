@@ -1,15 +1,18 @@
 import { Response } from 'express';
-import { HttpStatus, UserDetails } from '../../../../core';
+import { HttpStatus } from '../../../../core';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { ResultStatus } from '../../../../core/result/resultCode';
-import { RequestWithUserDetails } from '../../../../core/types/requests';
 import { authService } from '../../../../core/composition-root';
+import { RequestWithBody } from '../../../../core/types/requests';
+import { PasswordRecoveryInputDto } from '../../types/password-recovery-input.dto';
 
-export async function logoutHandler(req: RequestWithUserDetails<UserDetails>, res: Response) {
-  const userId = req.user.id;
-  const deviceId = req.user.deviceId;
+export async function passwordRecoveryHandler(
+  req: RequestWithBody<PasswordRecoveryInputDto>,
+  res: Response,
+) {
+  const email = req.body.email;
 
-  const result = await authService.logout(deviceId, userId);
+  const result = await authService.passwordRecovery(email);
 
   if (result.status !== ResultStatus.Success) {
     res
@@ -18,6 +21,6 @@ export async function logoutHandler(req: RequestWithUserDetails<UserDetails>, re
 
     return;
   }
-  res.status(HttpStatus.NoContent).clearCookie('refreshToken').send();
+  res.status(HttpStatus.NoContent);
   return;
 }

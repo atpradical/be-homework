@@ -13,6 +13,10 @@ import { registrationConfirmationHandler } from './handlers/registration-confirm
 import { refreshTokenGuard } from './guards/refresh-token.guard';
 import { refreshTokenHandler } from './handlers/refresh-token.handler';
 import { logoutHandler } from './handlers/logout.handler';
+import { passwordRecoveryHandler } from './handlers/password-recovery.handler';
+import { passwordRecoveryInputValidation } from './middleware/password-recovery.input-dto.validation';
+import { newPasswordInputValidation } from './middleware/new-password.input-dto.validation';
+import { newPasswordHandler } from './handlers/new-password.handler';
 
 export const authRouter = Router({});
 
@@ -53,3 +57,19 @@ authRouter.post(
 authRouter.post('/refresh-token', refreshTokenGuard, refreshTokenHandler);
 
 authRouter.post('/logout', refreshTokenGuard, logoutHandler);
+
+authRouter.post(
+  '/password-recovery',
+  ipRestrictionMiddleware,
+  passwordRecoveryInputValidation,
+  inputValidationResultMiddleware,
+  passwordRecoveryHandler,
+);
+
+authRouter.post(
+  '/new-password',
+  ipRestrictionMiddleware,
+  newPasswordInputValidation,
+  inputValidationResultMiddleware,
+  newPasswordHandler,
+);

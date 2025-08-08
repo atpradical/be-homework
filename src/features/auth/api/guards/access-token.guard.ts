@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus, IdType } from '../../../../core';
-import { authService } from '../../domain/auth.service';
 import { ResultStatus } from '../../../../core/result/resultCode';
+import { authService } from '../../../../core/composition-root';
 
 export async function accessTokenGuard(req: Request, res: Response, next: NextFunction) {
   if (!req.headers.authorization) {

@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { RequestWithUserDetails } from '../../../core/types/requests';
 import { HttpStatus, UserDetails } from '../../../core';
-import { AuthDeviceSessionQueryRepository } from '../repositories/auth-device-session.query-repository';
+import { authDeviceSessionQueryRepository } from '../../../core/composition-root';
 
 export async function getSecurityDeviceListHandler(
   req: RequestWithUserDetails<UserDetails>,
@@ -9,7 +9,7 @@ export async function getSecurityDeviceListHandler(
 ) {
   const userId = req.user.id;
 
-  const result = await AuthDeviceSessionQueryRepository.findAllActiveSessions(userId, new Date());
+  const result = await authDeviceSessionQueryRepository.findAllActiveSessions(userId, new Date());
 
   res.status(HttpStatus.Ok).send(result);
   return;

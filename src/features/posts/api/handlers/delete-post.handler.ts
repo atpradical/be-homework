@@ -1,9 +1,9 @@
 import { HttpStatus, IdType } from '../../../../core';
-import { postsService } from '../../domain/posts.service';
 import { RequestWithParams } from '../../../../core/types/requests';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { ResponseWithExtensions } from '../../../../core/types/responses';
+import { postsService } from '../../../../core/composition-root';
 
 export async function deletePostHandler(
   req: RequestWithParams<IdType>,

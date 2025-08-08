@@ -1,12 +1,13 @@
 import { Collection, Db, MongoClient } from 'mongodb';
 import { appConfig } from '../core/config';
-import { CommentDB } from '../features/comments/types';
 import { Blog } from '../features/blogs/types';
-import { Post } from '../features/posts/types';
 import { User } from '../features/users/domain/user.entity';
 import { AuthDeviceSession } from '../features/auth-device-session/domain/auth-device-session.entity';
 import { IpRestricted } from '../features/ip-restriction/domain/ip-restricted.entity';
+import { Comment } from '../features/comments/domain/comment.entity';
+import { Post } from '../features/posts/domain/post.etntity';
 
+//todo: переделать на класс
 const BLOG_COLLECTION_NAME = 'blogs';
 const POST_COLLECTION_NAME = 'posts';
 const USERS_COLLECTION_NAME = 'users';
@@ -19,7 +20,7 @@ export let client: MongoClient;
 export let blogsCollection: Collection<Blog>;
 export let postsCollection: Collection<Post>;
 export let usersCollection: Collection<User>;
-export let commentsCollection: Collection<CommentDB>;
+export let commentsCollection: Collection<Comment>;
 export let authDeviceSessionCollection: Collection<AuthDeviceSession>;
 export let tokenBlacklistCollection: Collection<{ token: string; createdAt: Date }>;
 export let ipRestrictedCollection: Collection<IpRestricted>;
@@ -33,7 +34,7 @@ export async function runDB(url: string): Promise<void> {
   blogsCollection = db.collection<Blog>(BLOG_COLLECTION_NAME);
   postsCollection = db.collection<Post>(POST_COLLECTION_NAME);
   usersCollection = db.collection<User>(USERS_COLLECTION_NAME);
-  commentsCollection = db.collection<CommentDB>(COMMENTS_COLLECTION_NAME);
+  commentsCollection = db.collection<Comment>(COMMENTS_COLLECTION_NAME);
   authDeviceSessionCollection = db.collection<AuthDeviceSession>(
     AUTH_DEVICE_SESSION_COLLECTION_NAME,
   );

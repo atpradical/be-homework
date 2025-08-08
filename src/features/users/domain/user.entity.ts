@@ -31,4 +31,12 @@ export class User {
     superAdmin.emailConfirmation.isConfirmed = true;
     return superAdmin;
   }
+
+  static updateUserPass(user: User, hash: string): User {
+    return {
+      ...user,
+      passwordHash: hash,
+      emailConfirmation: { ...user.emailConfirmation, isConfirmed: true },
+    };
+  }
 }

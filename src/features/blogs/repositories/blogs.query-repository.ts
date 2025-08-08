@@ -3,7 +3,7 @@ import { blogsCollection } from '../../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
 import { BlogQueryInput } from '../types/blog-query.input';
 
-export const blogsQueryRepository = {
+export class BlogsQueryRepository {
   async findAll(queryDto: BlogQueryInput): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection, searchWebsiteUrlTerm, searchNameTerm } =
       queryDto;
@@ -29,9 +29,9 @@ export const blogsQueryRepository = {
     const totalCount = await blogsCollection.countDocuments(filter);
 
     return { items, totalCount };
-  },
+  }
 
   async findById(id: string): Promise<WithId<Blog> | null> {
     return await blogsCollection.findOne({ _id: new ObjectId(id) });
-  },
-};
+  }
+}

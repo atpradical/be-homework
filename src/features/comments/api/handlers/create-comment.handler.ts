@@ -1,5 +1,4 @@
 import { Response } from 'express';
-import { postsService } from '../../../posts/domain/posts.service';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { HttpStatus, IdType, PostIdType } from '../../../../core';
@@ -8,6 +7,7 @@ import { CommentInputDto } from '../../types/comment.input.dto';
 import { CommentView } from '../../types';
 import { mapToCommentViewModel } from '../../mappers/map-to-comment-view-model';
 import { ExtensionType } from '../../../../core/result/object-result.entity';
+import { postsService } from '../../../../core/composition-root';
 
 export async function createCommentHandler(
   req: RequestWithParamsAndBodyAndUserId<PostIdType, CommentInputDto, IdType>,

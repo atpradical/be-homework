@@ -1,11 +1,11 @@
 import { Response } from 'express';
 import { LoginInputDto } from '../../types/login-input.dto';
-import { authService } from '../../domain/auth.service';
 import { HttpStatus } from '../../../../core';
 import { RequestWithBody } from '../../../../core/types/requests';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { appConfig } from '../../../../core/config';
+import { authService } from '../../../../core/composition-root';
 
 export async function loginHandler(req: RequestWithBody<LoginInputDto>, res: Response) {
   const ip = req.ip;

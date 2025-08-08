@@ -1,20 +1,20 @@
 import { CommentQueryInput } from '../types/comment-query.input';
 import { ObjectId, WithId } from 'mongodb';
-import { CommentDB } from '../types';
 import { commentsCollection } from '../../../db/mongo.db';
 import { CommentInputDto } from '../types/comment.input.dto';
+import { Comment } from '../domain/comment.entity';
 
-export const commentsRepository = {
+export class CommentsRepository {
   async findAll(
     postId: string,
     queryDto: CommentQueryInput,
-  ): Promise<{ items: WithId<CommentDB>[]; totalCount: number }> {
+  ): Promise<{ items: WithId<Comment>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
 
     const skip = (pageNumber - 1) * pageSize;
 
     const items = await commentsCollection
-      .find({ postId: new ObjectId(postId) })
+      .find({ postId })
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
@@ -23,21 +23,21 @@ export const commentsRepository = {
     const totalCount = await commentsCollection.countDocuments();
 
     return { items, totalCount };
-  },
+  }
 
-  async findById(id: string): Promise<WithId<CommentDB> | null> {
+  async findById(id: string): Promise<WithId<Comment> | null> {
     return commentsCollection.findOne({ _id: new ObjectId(id) });
-  },
+  }
 
-  async create(newComment: CommentDB): Promise<WithId<CommentDB>> {
+  async create(newComment: Comment): Promise<WithId<Comment>> {
     const insertResult = await commentsCollection.insertOne(newComment);
     return { ...newComment, _id: insertResult.insertedId };
-  },
+  }
 
   async delete(id: string): Promise<boolean> {
     const deleteResult = await commentsCollection.deleteOne({ _id: new ObjectId(id) });
     return deleteResult.deletedCount === 1;
-  },
+  }
 
   async update({ id, dto }: { id: string; dto: CommentInputDto }): Promise<boolean> {
     const updateResult = await commentsCollection.updateOne(
@@ -50,5 +50,5 @@ export const commentsRepository = {
     );
 
     return updateResult.matchedCount === 1;
-  },
-};
+  }
+}
