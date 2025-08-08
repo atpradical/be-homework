@@ -2,7 +2,7 @@ import { RequestWithUserId } from '../../../../core/types/requests';
 import { Response } from 'express';
 import { HttpStatus, IdType } from '../../../../core';
 import { mapToMeViewModel } from '../../../users/mappers/map-to-user-view-model';
-import { usersQueryRepository } from '../../../../core/composition-root';
+import { usersQueryRepository } from '../../../../composition-root';
 
 export async function meHandler(req: RequestWithUserId<IdType>, res: Response) {
   const userId = req.user?.id;

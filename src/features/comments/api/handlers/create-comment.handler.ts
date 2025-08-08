@@ -7,7 +7,7 @@ import { CommentInputDto } from '../../types/comment.input.dto';
 import { CommentView } from '../../types';
 import { mapToCommentViewModel } from '../../mappers/map-to-comment-view-model';
 import { ExtensionType } from '../../../../core/result/object-result.entity';
-import { postsService } from '../../../../core/composition-root';
+import { postsService } from '../../../../composition-root';
 
 export async function createCommentHandler(
   req: RequestWithParamsAndBodyAndUserId<PostIdType, CommentInputDto, IdType>,

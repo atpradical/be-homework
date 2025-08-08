@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '../../../core';
 import { errorsHandler } from '../../../core/errors/errors.handler';
-import { usersService } from '../../../core/composition-root';
+import { usersService } from '../../../composition-root';
 
 export async function deleteUserHandler(req: Request<{ id: string }>, res: Response) {
   try {

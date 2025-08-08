@@ -5,7 +5,7 @@ import { CommentQueryInput } from '../../types/comment-query.input';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../../core/helpers/set-default-sort-and-pagination';
 import { CommentListPaginatedOutput } from '../../types/comment-list-paginated.output';
 import { RequestWithParamsAndQuery } from '../../../../core/types/requests';
-import { commentsQueryRepository, postsQueryRepository } from '../../../../core/composition-root';
+import { commentsQueryRepository, postsQueryRepository } from '../../../../composition-root';
 
 export async function getCommentsListHandler(
   req: RequestWithParamsAndQuery<PostIdType, CommentQueryInput>,

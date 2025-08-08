@@ -3,7 +3,7 @@ import { errorsHandler } from '../../../core/errors/errors.handler';
 import { HttpStatus } from '../../../core';
 import { UserInputDto } from '../types/user-input.dto';
 import { mapToUserViewModel } from '../mappers/map-to-user-view-model';
-import { usersService } from '../../../core/composition-root';
+import { usersService } from '../../../composition-root';
 
 export async function createUserHandler(req: Request<{}, {}, UserInputDto>, res: Response) {
   try {

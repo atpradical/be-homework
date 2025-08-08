@@ -3,7 +3,7 @@ import { HttpStatus, IdType } from '../../../../core';
 import { mapToPostViewModel } from '../../mappers/map-to-post-view-model';
 import { RequestWithParams } from '../../../../core/types/requests';
 import { PostViewModel } from '../../types';
-import { postsQueryRepository } from '../../../../core/composition-root';
+import { postsQueryRepository } from '../../../../composition-root';
 
 export async function getPostHandler(
   req: RequestWithParams<IdType>,

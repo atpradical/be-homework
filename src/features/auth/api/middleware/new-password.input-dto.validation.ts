@@ -1,14 +1,13 @@
 import { body } from 'express-validator';
 
-export const EmailValidation = body('newPassword')
+export const passwordValidation = body('newPassword')
   .exists()
   .withMessage('is required')
   .isString()
   .withMessage('must be a string')
   .trim()
-  .withMessage('can not be empty')
-  .isEmail()
-  .withMessage('incorrect email');
+  .isLength({ min: 6, max: 20 })
+  .withMessage('must be between 6 and 20 characters');
 
 export const recoveryCodeValidation = body('recoveryCode')
   .exists()
@@ -19,4 +18,4 @@ export const recoveryCodeValidation = body('recoveryCode')
   .isUUID()
   .withMessage('Incorrect code');
 
-export const newPasswordInputValidation = [EmailValidation, recoveryCodeValidation];
+export const newPasswordInputValidation = [passwordValidation, recoveryCodeValidation];

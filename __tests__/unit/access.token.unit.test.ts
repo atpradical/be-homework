@@ -1,5 +1,5 @@
 import { ResultStatus } from '../../src/core/result/resultCode';
-import { authService, jwtService } from '../../src/core/composition-root';
+import { authService, jwtService } from '../../src/composition-root';
 
 describe('UNIT', () => {
   afterEach(() => {

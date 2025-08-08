@@ -4,7 +4,7 @@ import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { HttpStatus } from '../../../../core';
 import { ErrorMessagesResponse, ResponseWith } from '../../../../core/types/responses';
-import { authService } from '../../../../core/composition-root';
+import { authService } from '../../../../composition-root';
 
 export async function registrationEmailResendingHandler(
   req: RequestWithBody<RegistrationEmailResendingInputDto>,

@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
-import { postsService } from '../../../posts/domain/posts.service';
 import { HttpStatus } from '../../../../core';
 import { PostInputDto } from '../../../posts/types/post-input.dto';
 import { mapToPostViewModel } from '../../../posts/mappers/map-to-post-view-model';
-import { blogsService } from '../../domain/blogs.service';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
+import { blogsService, postsService } from '../../../../composition-root';
 
 export async function createPostForBlogHandler(
   req: Request<{ blogId: string }, {}, PostInputDto>,

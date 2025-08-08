@@ -5,7 +5,7 @@ import { RequestWithBody } from '../../../../core/types/requests';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { appConfig } from '../../../../core/config';
-import { authService } from '../../../../core/composition-root';
+import { authService } from '../../../../composition-root';
 
 export async function loginHandler(req: RequestWithBody<LoginInputDto>, res: Response) {
   const ip = req.ip;

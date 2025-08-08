@@ -3,7 +3,7 @@ import { HttpStatus, UserDetails } from '../../../core';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../core/result/resultCodeToHttpException';
 import { RequestWithParamsAndUserDetails } from '../../../core/types/requests';
-import { authDeviceSessionService } from '../../../core/composition-root';
+import { authDeviceSessionService } from '../../../composition-root';
 
 export async function deleteSecurityDeviceSessionHandler(
   req: RequestWithParamsAndUserDetails<{ id: string }, UserDetails>,

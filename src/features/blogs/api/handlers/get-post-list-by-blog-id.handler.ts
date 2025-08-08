@@ -9,7 +9,7 @@ import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { PostListPaginatedOutput } from '../../../posts/types/post-list-paginated.output';
 import { ExtensionType } from '../../../../core/result/object-result.entity';
-import { postsService } from '../../../../core/composition-root';
+import { postsService } from '../../../../composition-root';
 
 export async function getPostListByBlogIdHandler(
   req: RequestWithParamsAndQuery<{ blogId: string }, PaginationAndSorting<PostSortField>>, // Request<{ blogId: string }, {}, {}, PaginationAndSorting<PostSortField>>,

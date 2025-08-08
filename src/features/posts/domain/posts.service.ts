@@ -5,7 +5,7 @@ import { PostQueryInput } from '../types/post-query.input';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { CommentInputDto } from '../../comments/types/comment.input.dto';
 import { ObjectResult } from '../../../core/result/object-result.entity';
-import { usersQueryRepository } from '../../../core/composition-root';
+import { usersQueryRepository } from '../../../composition-root';
 import { BlogsService } from '../../blogs/domain/blogs.service';
 import { PostsQueryRepository } from '../repositories/posts.query-repository';
 import { BlogsQueryRepository } from '../../blogs/repositories/blogs.query-repository';

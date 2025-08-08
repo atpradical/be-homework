@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { RequestWithUserDetails } from '../../../core/types/requests';
 import { HttpStatus, UserDetails } from '../../../core';
-import { authDeviceSessionQueryRepository } from '../../../core/composition-root';
+import { authDeviceSessionQueryRepository } from '../../../composition-root';
 
 export async function getSecurityDeviceListHandler(
   req: RequestWithUserDetails<UserDetails>,

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus, UserDetails } from '../../../../core';
 import { ResultStatus } from '../../../../core/result/resultCode';
-import { authService } from '../../../../core/composition-root';
+import { authService } from '../../../../composition-root';
 
 export async function refreshTokenGuard(req: Request, res: Response, next: NextFunction) {
   const token = req.cookies.refreshToken;

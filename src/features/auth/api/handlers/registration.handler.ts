@@ -4,7 +4,7 @@ import { HttpStatus } from '../../../../core';
 import { RequestWithBody } from '../../../../core/types/requests';
 import { RegistrationUserInputDto } from '../../types/registration-user-input.dto';
 import { ErrorMessagesResponse, ResponseWith } from '../../../../core/types/responses';
-import { authService } from '../../../../core/composition-root';
+import { authService } from '../../../../composition-root';
 
 export async function registrationHandler(
   req: RequestWithBody<RegistrationUserInputDto>,

@@ -4,7 +4,7 @@ import { resultCodeToHttpException } from '../../../../core/result/resultCodeToH
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { HttpStatus } from '../../../../core';
 import { ErrorMessagesResponse, ResponseWith } from '../../../../core/types/responses';
-import { authService } from '../../../../core/composition-root';
+import { authService } from '../../../../composition-root';
 
 export async function registrationConfirmationHandler(
   req: RequestWithBody<RegistrationConfirmationInputDto>,

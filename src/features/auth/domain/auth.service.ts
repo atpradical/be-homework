@@ -18,7 +18,7 @@ import { AuthTokens } from '../types/auth-tokens.type';
 import { UaParserService } from '../adapters/ua-parser.service';
 import { AuthDeviceSession } from '../../auth-device-session/domain/auth-device-session.entity';
 import { UsersRepository } from '../../users/repositories/users.repository';
-import { authDeviceSessionService } from '../../../core/composition-root';
+import { authDeviceSessionService } from '../../../composition-root';
 import { NewPasswordInputDto } from '../types/new-password-input.dto';
 
 export class AuthService {
@@ -487,8 +487,8 @@ export class AuthService {
     this.nodemailerService
       .sendEmail(
         email,
-        user.emailConfirmation.confirmationCode,
-        this.emailExamples.registrationEmail,
+        updatedEmailConfirmation.confirmationCode,
+        this.emailExamples.passwordRecoveryEmail,
       )
       .catch((e: unknown) => {
         console.log('error in send email: ', e);
@@ -500,13 +500,15 @@ export class AuthService {
   async updatePassword(dto: NewPasswordInputDto): Promise<Nullable<ObjectResult>> {
     const { newPassword, recoveryCode } = dto;
 
+    console.log(recoveryCode);
+
     const user = await this.usersRepository.findUserByConfirmationCode(recoveryCode);
 
     if (!user) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
-        extensions: [{ field: 'recoveryCode', message: 'invalid recoveryCode' }],
+        extensions: [{ field: 'recoveryCode!!!!!!!!!!!!!!', message: 'invalid recoveryCode' }],
       });
     }
 
@@ -520,7 +522,7 @@ export class AuthService {
       .sendEmail(
         user.email,
         user.emailConfirmation.confirmationCode,
-        this.emailExamples.registrationEmail,
+        this.emailExamples.passwordRecoveryEmail,
       )
       .catch((e: unknown) => {
         console.log('error in send email: ', e);

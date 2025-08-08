@@ -7,7 +7,7 @@ import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { PostViewModel } from '../../types';
 import { ExtensionType } from '../../../../core/result/object-result.entity';
-import { postsService } from '../../../../core/composition-root';
+import { postsService } from '../../../../composition-root';
 
 export async function createPostForBlogHandler(
   req: RequestWithParamsAndBody<{ blogId: string }, PostInputDto>,

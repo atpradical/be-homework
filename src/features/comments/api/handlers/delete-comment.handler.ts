@@ -4,7 +4,7 @@ import { HttpStatus, IdType } from '../../../../core';
 import { CommentInputDto } from '../../types/comment.input.dto';
 import { ResultStatus } from '../../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
-import { commentsService } from '../../../../core/composition-root';
+import { commentsService } from '../../../../composition-root';
 
 export async function deleteCommentHandler(
   req: RequestWithParamsAndBody<IdType, CommentInputDto>,

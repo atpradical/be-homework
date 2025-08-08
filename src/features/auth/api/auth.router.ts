@@ -1,24 +1,26 @@
 import { Router } from 'express';
-import { loginHandler } from './handlers/login-handler';
 import { inputValidationResultMiddleware, ipRestrictionMiddleware } from '../../../core';
 import { authInputValidation } from './middleware/auth.input-dto.validation';
 import { accessTokenGuard } from './guards/access-token.guard';
 import { meHandler } from './handlers/me.handler';
-import { registrationHandler } from './handlers/registration.handler';
 import { registrationInputValidation } from './middleware/registration.input-dto.validation';
 import { registrationEmailResendingInputValidation } from './middleware/registration-email-resending.input-dto.validation';
-import { registrationEmailResendingHandler } from './handlers/registration-emai-resending.handler';
 import { codeValidation } from './middleware/registration-confirmation.input-dto.validation';
-import { registrationConfirmationHandler } from './handlers/registration-confirmation.handler';
 import { refreshTokenGuard } from './guards/refresh-token.guard';
+import { passwordRecoveryInputValidation } from './middleware/password-recovery.input-dto.validation';
+import { newPasswordInputValidation } from './middleware/new-password.input-dto.validation';
+import { registrationEmailResendingHandler } from './handlers/registration-emai-resending.handler';
+import { loginHandler } from './handlers/login-handler';
+import { registrationHandler } from './handlers/registration.handler';
+import { registrationConfirmationHandler } from './handlers/registration-confirmation.handler';
 import { refreshTokenHandler } from './handlers/refresh-token.handler';
 import { logoutHandler } from './handlers/logout.handler';
 import { passwordRecoveryHandler } from './handlers/password-recovery.handler';
-import { passwordRecoveryInputValidation } from './middleware/password-recovery.input-dto.validation';
-import { newPasswordInputValidation } from './middleware/new-password.input-dto.validation';
 import { newPasswordHandler } from './handlers/new-password.handler';
 
 export const authRouter = Router({});
+
+//todo: добавить класс AuthController + composition root
 
 authRouter.post(
   '/login',

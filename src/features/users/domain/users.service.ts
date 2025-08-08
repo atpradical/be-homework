@@ -5,7 +5,7 @@ import { UserInputDto } from '../types/user-input.dto';
 import { DomainError } from '../../../core/errors/domain.error';
 import { User } from './user.entity';
 import { BcryptService } from '../../auth/adapters/bcrypt.service';
-import { usersQueryRepository } from '../../../core/composition-root';
+import { usersQueryRepository } from '../../../composition-root';
 
 export class UsersService {
   constructor(

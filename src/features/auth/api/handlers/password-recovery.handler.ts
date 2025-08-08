@@ -1,8 +1,6 @@
 import { Response } from 'express';
 import { HttpStatus } from '../../../../core';
-import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
-import { ResultStatus } from '../../../../core/result/resultCode';
-import { authService } from '../../../../core/composition-root';
+import { authService } from '../../../../composition-root';
 import { RequestWithBody } from '../../../../core/types/requests';
 import { PasswordRecoveryInputDto } from '../../types/password-recovery-input.dto';
 
@@ -12,15 +10,16 @@ export async function passwordRecoveryHandler(
 ) {
   const email = req.body.email;
 
-  const result = await authService.passwordRecovery(email);
+  await authService.passwordRecovery(email);
 
-  if (result.status !== ResultStatus.Success) {
-    res
-      .status(resultCodeToHttpException(result.status))
-      .send({ errorsMessages: result.extensions });
+  // if (result.status !== ResultStatus.Success) {
+  //   res
+  //     .status(resultCodeToHttpException(result.status))
+  //     .send({ errorsMessages: result.extensions });
+  //
+  //   return;
+  // }
 
-    return;
-  }
-  res.status(HttpStatus.NoContent);
+  res.sendStatus(HttpStatus.NoContent);
   return;
 }

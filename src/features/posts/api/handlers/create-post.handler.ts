@@ -7,7 +7,7 @@ import { resultCodeToHttpException } from '../../../../core/result/resultCodeToH
 import { RequestWithBody } from '../../../../core/types/requests';
 import { PostViewModel } from '../../types';
 import { ExtensionType } from '../../../../core/result/object-result.entity';
-import { postsService } from '../../../../core/composition-root';
+import { postsService } from '../../../../composition-root';
 
 export async function createPostHandler(
   req: RequestWithBody<PostInputDto>,

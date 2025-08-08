@@ -8,7 +8,7 @@ import {
 import { appConfig } from '../../../../core/config';
 import { resultCodeToHttpException } from '../../../../core/result/resultCodeToHttpException';
 import { ResultStatus } from '../../../../core/result/resultCode';
-import { authService } from '../../../../core/composition-root';
+import { authService } from '../../../../composition-root';
 
 export async function refreshTokenHandler(
   req: RequestWithUserDetails<UserDetails>,

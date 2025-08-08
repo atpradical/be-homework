@@ -8,7 +8,7 @@ export class EmailExamples {
   registrationEmailResending(code: string) {
     return `<h1>Confirm email</h1>
                <p>We've sent you a new verification code. Please use it to complete your registration:<br>
-                  <a href='https://somesite.com/confirm-email?code=${code}'>complete registration</a>
+                  <a href='https://somesite.com/confirm-email?code=${code}'>Confirm</a>
               </p>`;
   }
   passwordRecoveryEmail(code: string) {

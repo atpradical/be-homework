@@ -2,7 +2,7 @@ import { testSeeder } from './test.seeder';
 import { ResultStatus } from '../../src/core/result/resultCode';
 import { client, dropDb, runDB, stopDb } from '../../src/db/mongo.db';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { authService, nodemailerService } from '../../src/core/composition-root';
+import { authService, nodemailerService } from '../../src/composition-root';
 
 describe('AUTH-INTEGRATION', () => {
   beforeAll(async () => {
