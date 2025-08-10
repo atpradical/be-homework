@@ -1,7 +1,9 @@
 import { authDeviceSessionCollection } from '../../../db/mongo.db';
 import { AuthDeviceSession } from '../domain/auth-device-session.entity';
 import { WithId } from 'mongodb';
+import { injectable } from 'inversify';
 
+@injectable()
 export class AuthDeviceSessionRepository {
   async create(newDevice: AuthDeviceSession): Promise<string> {
     const insertResult = await authDeviceSessionCollection.insertOne(newDevice);

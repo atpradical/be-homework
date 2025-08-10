@@ -1,12 +1,29 @@
 import { Router } from 'express';
-import { getSecurityDeviceListHandler } from '../handlers/get-security-device-list.handler';
 import { refreshTokenGuard } from '../../auth/api/guards/refresh-token.guard';
-import { deleteSecurityDeviceSessionHandler } from '../handlers/delete-security-device-session.handler';
-import { deleteAllSecurityDeviceSessionsHandler } from '../handlers/delete-all-security-device-sessions.handler';
+import { container } from '../../../composition-root';
+import { SecurityDevicesSessionsController } from './security-devices-sessions.controller';
 
 export const securityDevicesRouter = Router({});
 
+const authDeviceSessionController = container.get(SecurityDevicesSessionsController);
+
 securityDevicesRouter
-  .get('/', refreshTokenGuard, getSecurityDeviceListHandler)
-  .delete('/', refreshTokenGuard, deleteAllSecurityDeviceSessionsHandler)
-  .delete('/:id', refreshTokenGuard, deleteSecurityDeviceSessionHandler);
+  .get(
+    '/',
+    refreshTokenGuard,
+    authDeviceSessionController.getSecurityDeviceListHandler.bind(authDeviceSessionController),
+  )
+  .delete(
+    '/',
+    refreshTokenGuard,
+    authDeviceSessionController.deleteAllSecurityDeviceSessionsHandler.bind(
+      authDeviceSessionController,
+    ),
+  )
+  .delete(
+    '/:id',
+    refreshTokenGuard,
+    authDeviceSessionController.deleteSecurityDeviceSessionHandler.bind(
+      authDeviceSessionController,
+    ),
+  );

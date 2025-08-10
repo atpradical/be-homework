@@ -2,7 +2,9 @@ import { AuthDeviceSessionRepository } from '../repositories/auth-device-session
 import { AuthDeviceSession } from './auth-device-session.entity';
 import { ObjectResult } from '../../../core/result/object-result.entity';
 import { ResultStatus } from '../../../core/result/resultCode';
+import { injectable } from 'inversify';
 
+@injectable()
 export class AuthDeviceSessionService {
   constructor(private authDeviceSessionRepository: AuthDeviceSessionRepository) {}
 

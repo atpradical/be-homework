@@ -18,18 +18,21 @@ import { AuthTokens } from '../types/auth-tokens.type';
 import { UaParserService } from '../adapters/ua-parser.service';
 import { AuthDeviceSession } from '../../auth-device-session/domain/auth-device-session.entity';
 import { UsersRepository } from '../../users/repositories/users.repository';
-import { authDeviceSessionService } from '../../../composition-root';
 import { NewPasswordInputDto } from '../types/new-password-input.dto';
+import { inject, injectable } from 'inversify';
+import { AuthDeviceSessionService } from '../../auth-device-session/domain/auth-device-session.service';
 
+@injectable()
 export class AuthService {
   constructor(
-    private usersRepository: UsersRepository,
-    private usersQueryRepository: UsersQueryRepository,
-    private jwtService: JwtService,
-    private bcryptService: BcryptService,
-    private nodemailerService: NodemailerService,
-    private emailExamples: EmailExamples,
-    private uaParserService: UaParserService,
+    @inject(UsersRepository) private usersRepository: UsersRepository,
+    @inject(UsersQueryRepository) private usersQueryRepository: UsersQueryRepository,
+    @inject(JwtService) private jwtService: JwtService,
+    @inject(BcryptService) private bcryptService: BcryptService,
+    @inject(NodemailerService) private nodemailerService: NodemailerService,
+    @inject(EmailExamples) private emailExamples: EmailExamples,
+    @inject(UaParserService) private uaParserService: UaParserService,
+    @inject(AuthDeviceSessionService) private authDeviceSessionService: AuthDeviceSessionService,
   ) {}
 
   async login(
@@ -291,7 +294,7 @@ export class AuthService {
      *   });
      * }
      */
-    const authDeviceSession = await authDeviceSessionService.findById(payload.deviceId);
+    const authDeviceSession = await this.authDeviceSessionService.findById(payload.deviceId);
 
     if (!authDeviceSession) {
       return ObjectResult.createErrorResult({
@@ -340,7 +343,7 @@ export class AuthService {
      *  }
      *
      */
-    const authDeviceSession = await authDeviceSessionService.findById(deviceId);
+    const authDeviceSession = await this.authDeviceSessionService.findById(deviceId);
 
     if (
       !authDeviceSession ||
@@ -393,7 +396,7 @@ export class AuthService {
       issuedAt: new Date(decodedRefreshToken.iat * 1000),
     });
 
-    const sessionCreateResult = await authDeviceSessionService.create(newDevice);
+    const sessionCreateResult = await this.authDeviceSessionService.create(newDevice);
 
     if (sessionCreateResult.status !== ResultStatus.Success) {
       return null;
@@ -413,7 +416,7 @@ export class AuthService {
     const refreshToken = await this.jwtService.createRefreshToken(userId, deviceId);
     const decodedRefreshToken = await this.jwtService.decodeToken(refreshToken);
 
-    const updateResult = await authDeviceSessionService.updateDates(
+    const updateResult = await this.authDeviceSessionService.updateDates(
       deviceId,
       new Date(decodedRefreshToken.iat * 1000),
       new Date(decodedRefreshToken.exp * 1000),
@@ -441,7 +444,7 @@ export class AuthService {
      *   });
      *  }
      * */
-    const deleteResult = await authDeviceSessionService.deleteByDeviceId(deviceId, userId);
+    const deleteResult = await this.authDeviceSessionService.deleteByDeviceId(deviceId, userId);
 
     if (deleteResult.status !== ResultStatus.Success) {
       return ObjectResult.createErrorResult({

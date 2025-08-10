@@ -1,3 +1,6 @@
+import { injectable } from 'inversify';
+
+@injectable()
 export class EmailExamples {
   registrationEmail(code: string) {
     return `<h1>Thanks for your registration</h1>

@@ -1,8 +1,10 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { appConfig } from '../../../core/config';
+import { injectable } from 'inversify';
 
 export type RefreshTokenPayload = JwtPayload & { userId: string; deviceId: string };
 
+@injectable()
 export class JwtService {
   async createToken(userId: string): Promise<string> {
     return jwt.sign({ userId }, appConfig.AC_SECRET, {

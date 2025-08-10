@@ -1,6 +1,8 @@
 import { authDeviceSessionCollection } from '../../../db/mongo.db';
 import { DeviceViewModel } from '../types';
+import { injectable } from 'inversify';
 
+@injectable()
 export class AuthDeviceSessionQueryRepository {
   async findAllActiveSessions(userId: string, expiresAt: Date): Promise<DeviceViewModel[]> {
     return await authDeviceSessionCollection

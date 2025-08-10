@@ -5,26 +5,29 @@ import { UserInputDto } from '../types/user-input.dto';
 import { DomainError } from '../../../core/errors/domain.error';
 import { User } from './user.entity';
 import { BcryptService } from '../../auth/adapters/bcrypt.service';
-import { usersQueryRepository } from '../../../composition-root';
+import { inject, injectable } from 'inversify';
+import { UsersQueryRepository } from '../repositories/users.query-repository';
 
+@injectable()
 export class UsersService {
   constructor(
-    private usersRepository: UsersRepository,
-    private bcrypt: BcryptService,
+    @inject(UsersRepository) private usersRepository: UsersRepository,
+    @inject(BcryptService) private bcrypt: BcryptService,
+    @inject(UsersQueryRepository) private usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async findAll(queryDto: UserQueryInput): Promise<{ items: WithId<User>[]; totalCount: number }> {
-    return usersQueryRepository.findAll(queryDto);
+    return this.usersQueryRepository.findAll(queryDto);
   }
 
   async create(dto: UserInputDto): Promise<WithId<User> | null> {
-    const existUserWithSameEmail = await usersQueryRepository.findUserByEmail(dto.email);
+    const existUserWithSameEmail = await this.usersQueryRepository.findUserByEmail(dto.email);
 
     if (existUserWithSameEmail) {
       throw new DomainError('email should be unique', 'email');
     }
 
-    const existUserWithSameLogin = await usersQueryRepository.findUserByLogin(dto.login);
+    const existUserWithSameLogin = await this.usersQueryRepository.findUserByLogin(dto.login);
 
     if (existUserWithSameLogin) {
       throw new DomainError('login should be unique', 'login');

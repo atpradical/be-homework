@@ -3,6 +3,7 @@ import { ResultStatus } from '../../../core/result/resultCode';
 import { ObjectResult } from '../../../core/result/object-result.entity';
 import { CommentsRepository } from '../repositories/comments.repository';
 import { CommentsQueryRepository } from '../repositories/comments.query-repository';
+import { inject, injectable } from 'inversify';
 
 type CommentUpdateArgs = {
   id: string;
@@ -10,10 +11,11 @@ type CommentUpdateArgs = {
   userId: string;
 };
 
+@injectable()
 export class CommentsService {
   constructor(
-    private commentsRepository: CommentsRepository,
-    private commentsQueryRepository: CommentsQueryRepository,
+    @inject(CommentsRepository) private commentsRepository: CommentsRepository,
+    @inject(CommentsQueryRepository) private commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   async update({ userId, id, dto }: CommentUpdateArgs): Promise<ObjectResult> {

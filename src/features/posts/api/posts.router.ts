@@ -1,34 +1,29 @@
 import { Router } from 'express';
 import {
-  createPostHandler,
-  deletePostHandler,
-  getPostHandler,
-  getPostListHandler,
-  updatePostHandler,
-} from './handlers';
-import {
-  routeIdValidation,
   inputValidationResultMiddleware,
   paginationAndSortingValidation,
   postIdValidation,
+  routeIdValidation,
 } from '../../../core';
 import { postsInputValidation } from './middleware/posts.input-dto.validation';
 import { superAdminGuard } from '../../auth/api/guards/super-admin.guard';
 import { PostSortField } from '../types/post-sort-field';
 import { CommentSortField } from '../../comments/types/comment-sort-field';
-import { getCommentsListHandler } from '../../comments/api/handlers/get-comments-list.handler';
-import { createCommentHandler } from '../../comments/api/handlers/create-comment.handler';
 import { accessTokenGuard } from '../../auth/api/guards/access-token.guard';
 import { commentsInputValidation } from '../../comments/api/middleware/comments.input-dto.validation';
+import { PostsController } from './posts.controller';
+import { container } from '../../../composition-root';
 
 export const postsRouter = Router({});
+
+const postsController = container.get(PostsController);
 
 postsRouter
   .get(
     '/',
     paginationAndSortingValidation(PostSortField),
     inputValidationResultMiddleware,
-    getPostListHandler,
+    postsController.getPostListHandler.bind(postsController),
   )
 
   .post(
@@ -36,10 +31,15 @@ postsRouter
     superAdminGuard,
     postsInputValidation,
     inputValidationResultMiddleware,
-    createPostHandler,
+    postsController.createPostHandler.bind(postsController),
   )
 
-  .get('/:id', routeIdValidation, inputValidationResultMiddleware, getPostHandler)
+  .get(
+    '/:id',
+    routeIdValidation,
+    inputValidationResultMiddleware,
+    postsController.getPostHandler.bind(postsController),
+  )
 
   .put(
     '/:id',
@@ -47,7 +47,7 @@ postsRouter
     routeIdValidation,
     postsInputValidation,
     inputValidationResultMiddleware,
-    updatePostHandler,
+    postsController.updatePostHandler.bind(postsController),
   )
 
   .delete(
@@ -55,7 +55,7 @@ postsRouter
     superAdminGuard,
     routeIdValidation,
     inputValidationResultMiddleware,
-    deletePostHandler,
+    postsController.deletePostHandler.bind(postsController),
   )
 
   .get(
@@ -63,7 +63,7 @@ postsRouter
     postIdValidation,
     paginationAndSortingValidation(CommentSortField),
     inputValidationResultMiddleware,
-    getCommentsListHandler,
+    postsController.getCommentsListHandler.bind(postsController),
   )
 
   .post(
@@ -72,5 +72,5 @@ postsRouter
     postIdValidation,
     commentsInputValidation,
     inputValidationResultMiddleware,
-    createCommentHandler,
+    postsController.createCommentHandler.bind(postsController),
   );

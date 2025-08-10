@@ -2,7 +2,9 @@ import { ObjectId, WithId } from 'mongodb';
 import { commentsCollection } from '../../../db/mongo.db';
 import { CommentQueryInput } from '../types/comment-query.input';
 import { Comment } from '../domain/comment.entity';
+import { injectable } from 'inversify';
 
+@injectable()
 export class CommentsQueryRepository {
   async findAll(
     postId: string,

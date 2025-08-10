@@ -4,11 +4,13 @@ import { BlogInputDto } from '../types/blog-input.dto';
 import { BlogQueryInput } from '../types/blog-query.input';
 import { BlogsQueryRepository } from '../repositories/blogs.query-repository';
 import { BlogsRepository } from '../repositories/blogs.repository';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class BlogsService {
   constructor(
-    private blogsRepository: BlogsRepository,
-    private blogsQueryRepository: BlogsQueryRepository,
+    @inject(BlogsRepository) private blogsRepository: BlogsRepository,
+    @inject(BlogsQueryRepository) private blogsQueryRepository: BlogsQueryRepository,
   ) {}
 
   async findAll(queryDto: BlogQueryInput): Promise<{ items: WithId<Blog>[]; totalCount: number }> {

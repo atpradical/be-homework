@@ -4,7 +4,9 @@ import { ObjectId, WithId } from 'mongodb';
 import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 import { PostQueryInput } from '../types/post-query.input';
 import { Post } from '../domain/post.etntity';
+import { injectable } from 'inversify';
 
+@injectable()
 export class PostsRepository {
   async findAll(queryDto: PostQueryInput): Promise<{ items: WithId<Post>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;

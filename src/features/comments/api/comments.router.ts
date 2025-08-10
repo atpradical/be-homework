@@ -1,16 +1,22 @@
 import { Router } from 'express';
-import { routeIdValidation, inputValidationResultMiddleware } from '../../../core';
-import { getCommentHandler } from './handlers/get-comment.handler';
+import { inputValidationResultMiddleware, routeIdValidation } from '../../../core';
 import { accessTokenGuard } from '../../auth/api/guards/access-token.guard';
-import { updateCommentHandler } from './handlers/update-comment.handler';
-import { deleteCommentHandler } from './handlers/delete-comment.handler';
 import { commentExistValidation } from './middleware/comment-exist.validation';
 import { commentsInputValidation } from './middleware/comments.input-dto.validation';
+import { container } from '../../../composition-root';
+import { CommentsController } from './comments.controller';
 
 export const commentsRouter = Router({});
 
+const commentsController = container.get(CommentsController);
+
 commentsRouter
-  .get('/:id', routeIdValidation, inputValidationResultMiddleware, getCommentHandler)
+  .get(
+    '/:id',
+    routeIdValidation,
+    inputValidationResultMiddleware,
+    commentsController.getCommentHandler.bind(commentsController),
+  )
 
   .put(
     '/:id',
@@ -19,12 +25,12 @@ commentsRouter
     commentsInputValidation,
     inputValidationResultMiddleware,
     commentExistValidation,
-    updateCommentHandler,
+    commentsController.updateCommentHandler.bind(commentsController),
   )
   .delete(
     '/:id',
     accessTokenGuard,
     routeIdValidation,
     inputValidationResultMiddleware,
-    deleteCommentHandler,
+    commentsController.deleteCommentHandler.bind(commentsController),
   );

@@ -2,7 +2,9 @@ import { ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../db/mongo.db';
 import { UserQueryInput } from '../types/user-query.input';
 import { User } from '../domain/user.entity';
+import { injectable } from 'inversify';
 
+@injectable()
 export class UsersQueryRepository {
   async findAll(queryDto: UserQueryInput): Promise<{ items: WithId<User>[]; totalCount: number }> {
     const { searchEmailTerm, searchLoginTerm, sortBy, sortDirection, pageNumber, pageSize } =

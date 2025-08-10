@@ -4,7 +4,9 @@ import { blogsCollection } from '../../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
 import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 import { BlogQueryInput } from '../types/blog-query.input';
+import { injectable } from 'inversify';
 
+@injectable()
 export class BlogsRepository {
   async findAll(queryDto: BlogQueryInput): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection, searchWebsiteUrlTerm, searchNameTerm } =

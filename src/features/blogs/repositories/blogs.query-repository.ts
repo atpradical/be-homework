@@ -2,7 +2,9 @@ import { Blog } from '../types';
 import { blogsCollection } from '../../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
 import { BlogQueryInput } from '../types/blog-query.input';
+import { injectable } from 'inversify';
 
+@injectable()
 export class BlogsQueryRepository {
   async findAll(queryDto: BlogQueryInput): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection, searchWebsiteUrlTerm, searchNameTerm } =

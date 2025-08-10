@@ -5,14 +5,16 @@ import { PostQueryInput } from '../types/post-query.input';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { CommentInputDto } from '../../comments/types/comment.input.dto';
 import { ObjectResult } from '../../../core/result/object-result.entity';
-import { usersQueryRepository } from '../../../composition-root';
 import { BlogsService } from '../../blogs/domain/blogs.service';
 import { PostsQueryRepository } from '../repositories/posts.query-repository';
 import { BlogsQueryRepository } from '../../blogs/repositories/blogs.query-repository';
 import { CommentsRepository } from '../../comments/repositories/comments.repository';
 import { Post } from './post.etntity';
 import { Comment } from '../../comments/domain/comment.entity';
+import { injectable } from 'inversify';
+import { UsersQueryRepository } from '../../users/repositories/users.query-repository';
 
+@injectable()
 export class PostsService {
   constructor(
     private postsRepository: PostsRepository,
@@ -20,6 +22,7 @@ export class PostsService {
     private blogsService: BlogsService,
     private blogsQueryRepository: BlogsQueryRepository,
     private commentsRepository: CommentsRepository,
+    private usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async findAll(queryDto: PostQueryInput): Promise<{ items: WithId<Post>[]; totalCount: number }> {
@@ -167,7 +170,7 @@ export class PostsService {
     postId,
     dto,
   }: CreateCommentArgs): Promise<ObjectResult<WithId<Comment | null>>> {
-    const userData = await usersQueryRepository.findUserById(userId);
+    const userData = await this.usersQueryRepository.findUserById(userId);
 
     if (!userData) {
       return ObjectResult.createErrorResult({

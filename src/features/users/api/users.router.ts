@@ -1,17 +1,18 @@
 import { Router } from 'express';
-import { getUsersListHandler } from '../handlers/get-user-list.handler';
 import { superAdminGuard } from '../../auth/api/guards/super-admin.guard';
-import { createUserHandler } from '../handlers/create-user.handler';
-import { deleteUserHandler } from '../handlers/delete-user.handler';
 import {
-  routeIdValidation,
   inputValidationResultMiddleware,
   paginationAndSortingValidation,
+  routeIdValidation,
 } from '../../../core';
 import { userInputValidation } from './middleware/users.input-dto.validation';
 import { UserSortField } from '../types/user-sort-field';
+import { UsersController } from './users.controller';
+import { container } from '../../../composition-root';
 
 export const usersRouter = Router({});
+
+const usersController = container.get(UsersController);
 
 usersRouter
 
@@ -19,7 +20,7 @@ usersRouter
     '/',
     paginationAndSortingValidation(UserSortField),
     inputValidationResultMiddleware,
-    getUsersListHandler,
+    usersController.getUsersListHandler.bind(usersController),
   )
 
   .post(
@@ -27,7 +28,7 @@ usersRouter
     superAdminGuard,
     userInputValidation,
     inputValidationResultMiddleware,
-    createUserHandler,
+    usersController.createUserHandler.bind(usersController),
   )
 
   .delete(
@@ -35,5 +36,5 @@ usersRouter
     superAdminGuard,
     routeIdValidation,
     inputValidationResultMiddleware,
-    deleteUserHandler,
+    usersController.deleteUserHandler.bind(usersController),
   );
