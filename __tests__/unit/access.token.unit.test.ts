@@ -1,5 +1,9 @@
 import { ResultStatus } from '../../src/core/result/resultCode';
-import { authService, jwtService } from '../../src/composition-root';
+import { container } from '../../src/composition-root';
+import { AuthService } from '../../src/features/auth/domain/auth.service';
+import { JwtService } from '../../src/features/auth/adapters/jwt.service';
+
+const authService = container.get<AuthService>(AuthService);
 
 describe('UNIT', () => {
   afterEach(() => {
@@ -14,7 +18,7 @@ describe('UNIT', () => {
 
   it('should not verify in jwtService', async () => {
     // jwtService.verifyToken = jest.fn().mockImplementation(async (token: string) => null);
-    jest.spyOn(jwtService, 'verifyToken').mockResolvedValue(null);
+    jest.spyOn(JwtService.prototype, 'verifyToken').mockResolvedValue(null);
 
     const result = await authService.checkAccessToken('Bearer gbfbfbbhf');
 
@@ -25,7 +29,7 @@ describe('UNIT', () => {
     // jwtService.verifyToken = jest
     //   .fn()
     //   .mockImplementation(async (token: string) => ({ userId: '1' }));
-    jest.spyOn(jwtService, 'verifyToken').mockResolvedValue({ userId: '1' });
+    jest.spyOn(JwtService.prototype, 'verifyToken').mockResolvedValue({ userId: '1' });
 
     const result = await authService.checkAccessToken('Bearer gbfbfbbhf');
 

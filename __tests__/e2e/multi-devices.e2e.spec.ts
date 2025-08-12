@@ -11,7 +11,10 @@ import {
 } from '../../src/features/auth/api/guards/super-admin.guard';
 import { userAgents } from './utils/user-agents';
 import { UserViewModel } from '../../src/features/users/types';
-import { jwtService } from '../../src/composition-root';
+import { container } from '../../src/composition-root';
+import { JwtService } from '../../src/features/auth/adapters/jwt.service';
+
+const jwtService = container.get<JwtService>(JwtService);
 
 describe('Multi Devices test', () => {
   const app = express();

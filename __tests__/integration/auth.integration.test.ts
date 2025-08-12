@@ -2,7 +2,12 @@ import { testSeeder } from './test.seeder';
 import { ResultStatus } from '../../src/core/result/resultCode';
 import { client, dropDb, runDB, stopDb } from '../../src/db/mongo.db';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { authService, nodemailerService } from '../../src/composition-root';
+import { container } from '../../src/composition-root';
+import { AuthService } from '../../src/features/auth/domain/auth.service';
+import { NodemailerService } from '../../src/features/auth/adapters/nodemailer.service';
+
+const authService = container.get<AuthService>(AuthService);
+const nodemailerService = container.get<NodemailerService>(NodemailerService);
 
 describe('AUTH-INTEGRATION', () => {
   beforeAll(async () => {
@@ -24,12 +29,13 @@ describe('AUTH-INTEGRATION', () => {
 
   describe('User Registration', () => {
     //nodemailerService.sendEmail = emailServiceMock.sendEmail;
+    jest.spyOn(NodemailerService.prototype, 'sendEmail').mockResolvedValue(true);
 
-    nodemailerService.sendEmail = jest
-      .fn()
-      .mockImplementation((email: string, code: string, template: (code: string) => string) =>
-        Promise.resolve(true),
-      );
+    // nodemailerService.sendEmail = jest
+    //   .fn()
+    //   .mockImplementation((email: string, code: string, template: (code: string) => string) =>
+    //     Promise.resolve(true),
+    //   );
 
     it('should register user with correct data', async () => {
       const { login, password, email } = testSeeder.createUserDto();
