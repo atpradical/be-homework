@@ -1,20 +1,28 @@
 import { WithId } from 'mongodb';
 import { Blog } from '../types';
 import { BlogInputDto } from '../types/blog-input.dto';
-import { blogsRepository } from '../repositories/blogs.repository';
 import { BlogQueryInput } from '../types/blog-query.input';
-import { blogsQueryRepository } from '../repositories/blogs.query-repository';
+import { BlogsQueryRepository } from '../repositories/blogs.query-repository';
+import { BlogsRepository } from '../repositories/blogs.repository';
+import { inject, injectable } from 'inversify';
 
-export const blogsService = {
+@injectable()
+export class BlogsService {
+  constructor(
+    @inject(BlogsRepository) private blogsRepository: BlogsRepository,
+    @inject(BlogsQueryRepository) private blogsQueryRepository: BlogsQueryRepository,
+  ) {}
+
   async findAll(queryDto: BlogQueryInput): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
-    return blogsQueryRepository.findAll(queryDto);
-  },
+    return this.blogsQueryRepository.findAll(queryDto);
+  }
 
   async findById(id: string): Promise<WithId<Blog>> {
-    return blogsQueryRepository.findById(id);
-  },
+    return this.blogsQueryRepository.findById(id);
+  }
 
   async create(dto: BlogInputDto): Promise<WithId<Blog>> {
+    //todo: переделать на класс
     const newBlog: Blog = {
       name: dto.name,
       description: dto.description,
@@ -23,16 +31,16 @@ export const blogsService = {
       createdAt: new Date(),
     };
 
-    return blogsRepository.create(newBlog);
-  },
+    return this.blogsRepository.create(newBlog);
+  }
 
   async update(id: string, dto: BlogInputDto): Promise<void> {
-    await blogsRepository.update(id, dto);
+    await this.blogsRepository.update(id, dto);
     return;
-  },
+  }
 
   async delete(id: string): Promise<void> {
-    await blogsRepository.delete(id);
+    await this.blogsRepository.delete(id);
     return;
-  },
-};
+  }
+}

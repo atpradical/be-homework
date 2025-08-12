@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus, IdType } from '../../../../core';
-import { authService } from '../../domain/auth.service';
 import { ResultStatus } from '../../../../core/result/resultCode';
+import { container } from '../../../../composition-root';
+import { AuthService } from '../../domain/auth.service';
+
+const authService = container.get<AuthService>(AuthService);
 
 export async function accessTokenGuard(req: Request, res: Response, next: NextFunction) {
   if (!req.headers.authorization) {

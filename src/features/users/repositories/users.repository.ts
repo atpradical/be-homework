@@ -3,8 +3,10 @@ import { usersCollection } from '../../../db/mongo.db';
 import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 import { UserQueryInput } from '../types/user-query.input';
 import { User } from '../domain/user.entity';
+import { injectable } from 'inversify';
 
-export const usersRepository = {
+@injectable()
+export class UsersRepository {
   async findAll(queryDto: UserQueryInput): Promise<{ items: WithId<User>[]; totalCount: number }> {
     const { searchEmailTerm, searchLoginTerm, sortBy, sortDirection, pageNumber, pageSize } =
       queryDto;
@@ -31,16 +33,16 @@ export const usersRepository = {
     const totalCount = await usersCollection.countDocuments(filter);
 
     return { items, totalCount };
-  },
+  }
 
   async findUserById(id: string): Promise<WithId<User> | null> {
     return await usersCollection.findOne({ _id: new ObjectId(id) });
-  },
+  }
 
   async create(newUser: User): Promise<string> {
     const insertResult = await usersCollection.insertOne(newUser);
     return insertResult.insertedId.toString();
-  },
+  }
 
   async update(id: ObjectId, dto: Partial<User>): Promise<boolean> {
     const updateResult = await usersCollection.updateOne(
@@ -53,7 +55,7 @@ export const usersRepository = {
     );
 
     return updateResult.matchedCount >= 1;
-  },
+  }
 
   async delete(id: string): Promise<void> {
     const user = await usersCollection.findOne({ _id: new ObjectId(id) });
@@ -69,13 +71,13 @@ export const usersRepository = {
     if (deletedResult.deletedCount < 1) {
       throw new Error('User not exist');
     }
-  },
+  }
 
   async findUserByLoginOrEmail(loginOrEmail: string): Promise<WithId<User> | null> {
     return await usersCollection.findOne({
       $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
     });
-  },
+  }
 
   async doesExistByLoginOrEmail(dto: { login?: string; email?: string }): Promise<boolean> {
     const user = await usersCollection.findOne({
@@ -83,19 +85,19 @@ export const usersRepository = {
     });
 
     return !!user;
-  },
+  }
 
   async doesExistByLogin(login: string): Promise<boolean> {
     const user = await usersCollection.findOne({ login });
     return !!user;
-  },
+  }
 
   async doesExistByEmail(email: string): Promise<boolean> {
     const user = await usersCollection.findOne({ email });
     return !!user;
-  },
+  }
 
   async findUserByConfirmationCode(code: string): Promise<WithId<User> | null> {
     return await usersCollection.findOne({ 'emailConfirmation.confirmationCode': code });
-  },
-};
+  }
+}

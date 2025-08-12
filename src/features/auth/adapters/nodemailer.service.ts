@@ -1,7 +1,9 @@
 import nodemailer, { SentMessageInfo } from 'nodemailer';
 import { appConfig } from '../../../core/config';
+import { injectable } from 'inversify';
 
-export const nodemailerService = {
+@injectable()
+export class NodemailerService {
   async sendEmail(
     email: string,
     code: string,
@@ -21,5 +23,5 @@ export const nodemailerService = {
       subject: 'Your code is here',
       html: template(code), // html body
     });
-  },
-};
+  }
+}

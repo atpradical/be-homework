@@ -1,8 +1,9 @@
 import { CommentInputDto } from '../types/comment.input.dto';
-import { commentsQueryRepository } from '../repositories/comments.query-repository';
 import { ResultStatus } from '../../../core/result/resultCode';
-import { commentsRepository } from '../repositories/comments.repository';
 import { ObjectResult } from '../../../core/result/object-result.entity';
+import { CommentsRepository } from '../repositories/comments.repository';
+import { CommentsQueryRepository } from '../repositories/comments.query-repository';
+import { inject, injectable } from 'inversify';
 
 type CommentUpdateArgs = {
   id: string;
@@ -10,9 +11,15 @@ type CommentUpdateArgs = {
   userId: string;
 };
 
-export const commentsService = {
+@injectable()
+export class CommentsService {
+  constructor(
+    @inject(CommentsRepository) private commentsRepository: CommentsRepository,
+    @inject(CommentsQueryRepository) private commentsQueryRepository: CommentsQueryRepository,
+  ) {}
+
   async update({ userId, id, dto }: CommentUpdateArgs): Promise<ObjectResult> {
-    const comment = await commentsQueryRepository.findById(id);
+    const comment = await this.commentsQueryRepository.findById(id);
 
     if (!comment) {
       return ObjectResult.createErrorResult({
@@ -32,7 +39,7 @@ export const commentsService = {
       });
     }
 
-    const result = await commentsRepository.update({ id, dto });
+    const result = await this.commentsRepository.update({ id, dto });
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -43,10 +50,10 @@ export const commentsService = {
     }
 
     return ObjectResult.createSuccessResult(null);
-  },
+  }
 
   async delete({ id, userId }: { id: string; userId: string }): Promise<ObjectResult> {
-    const comment = await commentsQueryRepository.findById(id);
+    const comment = await this.commentsQueryRepository.findById(id);
 
     if (!comment) {
       return ObjectResult.createErrorResult({
@@ -66,7 +73,7 @@ export const commentsService = {
       });
     }
 
-    const result = await commentsRepository.delete(id);
+    const result = await this.commentsRepository.delete(id);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -77,5 +84,5 @@ export const commentsService = {
     }
 
     return ObjectResult.createSuccessResult(null);
-  },
-};
+  }
+}

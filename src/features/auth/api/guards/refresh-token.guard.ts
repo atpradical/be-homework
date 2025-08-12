@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus, UserDetails } from '../../../../core';
-import { authService } from '../../domain/auth.service';
 import { ResultStatus } from '../../../../core/result/resultCode';
+import { AuthService } from '../../domain/auth.service';
+import { container } from '../../../../composition-root';
+
+const authService = container.get<AuthService>(AuthService);
 
 export async function refreshTokenGuard(req: Request, res: Response, next: NextFunction) {
   const token = req.cookies.refreshToken;

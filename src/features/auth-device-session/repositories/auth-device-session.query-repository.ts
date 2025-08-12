@@ -1,10 +1,13 @@
 import { authDeviceSessionCollection } from '../../../db/mongo.db';
 import { DeviceViewModel } from '../types';
+import { injectable } from 'inversify';
 
-export const AuthDeviceSessionQueryRepository = {
+@injectable()
+export class AuthDeviceSessionQueryRepository {
   async findAllActiveSessions(userId: string, expiresAt: Date): Promise<DeviceViewModel[]> {
     return await authDeviceSessionCollection
       .find({ userId, expiresAt: { $gte: expiresAt } })
+      .sort({ _id: 1 })
       .toArray()
       .then((data) =>
         data.map((d) => ({
@@ -14,5 +17,5 @@ export const AuthDeviceSessionQueryRepository = {
           deviceId: d.deviceId,
         })),
       );
-  },
-};
+  }
+}

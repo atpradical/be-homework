@@ -1,14 +1,13 @@
-import { usersQueryRepository } from '../../users/repositories/users.query-repository';
+import { UsersQueryRepository } from '../../users/repositories/users.query-repository';
 import { LoginInputDto } from '../types/login-input.dto';
 import { WithId } from 'mongodb';
-import { jwtService, RefreshTokenPayload } from '../adapters/jwt.service';
-import { bcryptService } from '../adapters/bcrypt.service';
+import { JwtService, RefreshTokenPayload } from '../adapters/jwt.service';
+import { BcryptService } from '../adapters/bcrypt.service';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { RegistrationUserInputDto } from '../types/registration-user-input.dto';
 import { User } from '../../users/domain/user.entity';
-import { usersRepository } from '../../users/repositories/users.repository';
-import { nodemailerService } from '../adapters/nodemailer.service';
-import { emailExamples } from '../adapters/emailExamples';
+import { NodemailerService } from '../adapters/nodemailer.service';
+import { EmailExamples } from '../adapters/emailExamples';
 import { ObjectResult } from '../../../core/result/object-result.entity';
 import { RegistrationEmailResendingInputDto } from '../types/registration-email-resending-input.dto';
 import { randomUUID } from 'node:crypto';
@@ -16,11 +15,26 @@ import { add } from 'date-fns/add';
 import { RegistrationConfirmationInputDto } from '../types/registration-confirmation.input.dto';
 import { Nullable } from '../../../core';
 import { AuthTokens } from '../types/auth-tokens.type';
-import { uaParserService } from '../adapters/ua-parser.service';
-import { authDeviceSessionService } from '../../auth-device-session/domain/auth-device-session.service';
+import { UaParserService } from '../adapters/ua-parser.service';
 import { AuthDeviceSession } from '../../auth-device-session/domain/auth-device-session.entity';
+import { UsersRepository } from '../../users/repositories/users.repository';
+import { NewPasswordInputDto } from '../types/new-password-input.dto';
+import { inject, injectable } from 'inversify';
+import { AuthDeviceSessionService } from '../../auth-device-session/domain/auth-device-session.service';
 
-export const authService = {
+@injectable()
+export class AuthService {
+  constructor(
+    @inject(UsersRepository) private usersRepository: UsersRepository,
+    @inject(UsersQueryRepository) private usersQueryRepository: UsersQueryRepository,
+    @inject(JwtService) private jwtService: JwtService,
+    @inject(BcryptService) private bcryptService: BcryptService,
+    @inject(NodemailerService) private nodemailerService: NodemailerService,
+    @inject(EmailExamples) private emailExamples: EmailExamples,
+    @inject(UaParserService) private uaParserService: UaParserService,
+    @inject(AuthDeviceSessionService) private authDeviceSessionService: AuthDeviceSessionService,
+  ) {}
+
   async login(
     dto: LoginInputDto,
     ip: string,
@@ -51,10 +65,10 @@ export const authService = {
     const { accessToken, refreshToken } = generateTokensResult;
 
     return ObjectResult.createSuccessResult({ accessToken, refreshToken });
-  },
+  }
 
   async checkCredentials(dto: LoginInputDto): Promise<ObjectResult<WithId<User>>> {
-    const user = await usersQueryRepository.findUserByLoginOrEmail(dto.loginOrEmail);
+    const user = await this.usersQueryRepository.findUserByLoginOrEmail(dto.loginOrEmail);
 
     if (!user) {
       return ObjectResult.createErrorResult({
@@ -64,7 +78,10 @@ export const authService = {
       });
     }
 
-    const isPasswordCorrect = await bcryptService.checkPassword(dto.password, user.passwordHash);
+    const isPasswordCorrect = await this.bcryptService.checkPassword(
+      dto.password,
+      user.passwordHash,
+    );
 
     if (!isPasswordCorrect) {
       return ObjectResult.createErrorResult({
@@ -83,12 +100,12 @@ export const authService = {
     }
 
     return ObjectResult.createSuccessResult(user);
-  },
+  }
 
   async registerUser(dto: RegistrationUserInputDto): Promise<Nullable<ObjectResult<User>>> {
     const { login, email, password } = dto;
 
-    const isSameLogin = await usersRepository.doesExistByLogin(login);
+    const isSameLogin = await this.usersRepository.doesExistByLogin(login);
 
     if (isSameLogin) {
       return ObjectResult.createErrorResult({
@@ -98,7 +115,7 @@ export const authService = {
       });
     }
 
-    const isSameEmail = await usersRepository.doesExistByEmail(email);
+    const isSameEmail = await this.usersRepository.doesExistByEmail(email);
 
     if (isSameEmail) {
       return ObjectResult.createErrorResult({
@@ -108,31 +125,31 @@ export const authService = {
       });
     }
 
-    const passwordHash = await bcryptService.generateHash(password);
+    const passwordHash = await this.bcryptService.generateHash(password);
 
     const user = new User(login, email, passwordHash);
 
-    await usersRepository.create(user);
+    await this.usersRepository.create(user);
 
-    nodemailerService
+    this.nodemailerService
       .sendEmail(
         user.email,
         user.emailConfirmation.confirmationCode,
-        emailExamples.registrationEmail,
+        this.emailExamples.registrationEmail,
       )
       .catch((e: unknown) => {
         console.log('error in send email: ', e);
       });
 
     return ObjectResult.createSuccessResult(null);
-  },
+  }
 
   async resendEmailConfirmation(
     dto: RegistrationEmailResendingInputDto,
   ): Promise<Nullable<ObjectResult>> {
     const { email } = dto;
 
-    const user = await usersRepository.findUserByLoginOrEmail(email);
+    const user = await this.usersRepository.findUserByLoginOrEmail(email);
 
     if (!user) {
       return ObjectResult.createErrorResult({
@@ -158,7 +175,7 @@ export const authService = {
       isConfirmed: false,
     };
 
-    const updateResult = await usersRepository.update(user._id, {
+    const updateResult = await this.usersRepository.update(user._id, {
       emailConfirmation: updatedEmailConfirmation,
     });
 
@@ -170,23 +187,23 @@ export const authService = {
       });
     }
 
-    nodemailerService
+    this.nodemailerService
       .sendEmail(
         user.email,
         updatedEmailConfirmation.confirmationCode,
-        emailExamples.registrationEmail,
+        this.emailExamples.registrationEmail,
       )
       .catch((e: unknown) => {
         console.log('error in send email: ', e);
       });
 
     return ObjectResult.createSuccessResult(null);
-  },
+  }
 
   async confirmEmail(
     dto: RegistrationConfirmationInputDto,
   ): Promise<Promise<Nullable<ObjectResult>>> {
-    const user = await usersRepository.findUserByConfirmationCode(dto.code);
+    const user = await this.usersRepository.findUserByConfirmationCode(dto.code);
 
     if (!user) {
       return ObjectResult.createErrorResult({
@@ -212,7 +229,7 @@ export const authService = {
       });
     }
 
-    const updateResult = await usersRepository.update(user._id, {
+    const updateResult = await this.usersRepository.update(user._id, {
       emailConfirmation: {
         isConfirmed: true,
         confirmationCode: user.emailConfirmation.confirmationCode,
@@ -229,7 +246,7 @@ export const authService = {
     }
 
     return ObjectResult.createSuccessResult(null);
-  },
+  }
 
   async checkAccessToken(authHeader: string): Promise<ObjectResult<{ userId: string }>> {
     const [authType, token] = authHeader.split(' ');
@@ -242,7 +259,7 @@ export const authService = {
       });
     }
 
-    const payload = await jwtService.verifyToken(token);
+    const payload = await this.jwtService.verifyToken(token);
 
     if (!payload) {
       return ObjectResult.createErrorResult({
@@ -253,10 +270,10 @@ export const authService = {
     }
 
     return ObjectResult.createSuccessResult({ userId: payload.userId });
-  },
+  }
 
   async checkRefreshToken(token: string): Promise<ObjectResult<RefreshTokenPayload>> {
-    const payload = await jwtService.verifyRefreshToken(token);
+    const payload = await this.jwtService.verifyRefreshToken(token);
 
     if (!payload) {
       return ObjectResult.createErrorResult({
@@ -277,7 +294,7 @@ export const authService = {
      *   });
      * }
      */
-    const authDeviceSession = await authDeviceSessionService.findById(payload.deviceId);
+    const authDeviceSession = await this.authDeviceSessionService.findById(payload.deviceId);
 
     if (!authDeviceSession) {
       return ObjectResult.createErrorResult({
@@ -296,7 +313,7 @@ export const authService = {
       });
     }
 
-    const user = await usersRepository.findUserById(payload.userId);
+    const user = await this.usersRepository.findUserById(payload.userId);
 
     if (!user) {
       return ObjectResult.createErrorResult({
@@ -307,7 +324,7 @@ export const authService = {
     }
 
     return ObjectResult.createSuccessResult(payload);
-  },
+  }
 
   async refreshToken(
     userId: string,
@@ -326,7 +343,7 @@ export const authService = {
      *  }
      *
      */
-    const authDeviceSession = await authDeviceSessionService.findById(deviceId);
+    const authDeviceSession = await this.authDeviceSessionService.findById(deviceId);
 
     if (
       !authDeviceSession ||
@@ -353,7 +370,7 @@ export const authService = {
     const { accessToken, refreshToken } = result;
 
     return ObjectResult.createSuccessResult({ accessToken, refreshToken });
-  },
+  }
 
   async generateTokensAndAuthSession(
     userId: string,
@@ -362,13 +379,13 @@ export const authService = {
   ): Promise<AuthTokens | null> {
     const deviceId = crypto.randomUUID();
 
-    const deviceName = await uaParserService
+    const deviceName = await this.uaParserService
       .parse(userAgent)
       .then((data) => data.browser.name + ' ' + data.os.name);
 
-    const accessToken = await jwtService.createToken(userId);
-    const refreshToken = await jwtService.createRefreshToken(userId, deviceId);
-    const decodedRefreshToken = await jwtService.decodeToken(refreshToken);
+    const accessToken = await this.jwtService.createToken(userId);
+    const refreshToken = await this.jwtService.createRefreshToken(userId, deviceId);
+    const decodedRefreshToken = await this.jwtService.decodeToken(refreshToken);
 
     const newDevice = AuthDeviceSession.create({
       deviceId,
@@ -379,7 +396,7 @@ export const authService = {
       issuedAt: new Date(decodedRefreshToken.iat * 1000),
     });
 
-    const sessionCreateResult = await authDeviceSessionService.create(newDevice);
+    const sessionCreateResult = await this.authDeviceSessionService.create(newDevice);
 
     if (sessionCreateResult.status !== ResultStatus.Success) {
       return null;
@@ -389,17 +406,17 @@ export const authService = {
       accessToken,
       refreshToken,
     };
-  },
+  }
 
   async generateTokensAndUpdateSession(
     userId: string,
     deviceId: string,
   ): Promise<AuthTokens | null> {
-    const accessToken = await jwtService.createToken(userId);
-    const refreshToken = await jwtService.createRefreshToken(userId, deviceId);
-    const decodedRefreshToken = await jwtService.decodeToken(refreshToken);
+    const accessToken = await this.jwtService.createToken(userId);
+    const refreshToken = await this.jwtService.createRefreshToken(userId, deviceId);
+    const decodedRefreshToken = await this.jwtService.decodeToken(refreshToken);
 
-    const updateResult = await authDeviceSessionService.updateExpiresAt(
+    const updateResult = await this.authDeviceSessionService.updateDates(
       deviceId,
       new Date(decodedRefreshToken.iat * 1000),
       new Date(decodedRefreshToken.exp * 1000),
@@ -413,7 +430,7 @@ export const authService = {
       accessToken,
       refreshToken,
     };
-  },
+  }
 
   async logout(deviceId: string, userId: string): Promise<ObjectResult> {
     /* Удаляем сессию при logout (вместо использования tokenBlacklistRepository)
@@ -427,7 +444,7 @@ export const authService = {
      *   });
      *  }
      * */
-    const deleteResult = await authDeviceSessionService.deleteByDeviceId(deviceId, userId);
+    const deleteResult = await this.authDeviceSessionService.deleteByDeviceId(deviceId, userId);
 
     if (deleteResult.status !== ResultStatus.Success) {
       return ObjectResult.createErrorResult({
@@ -438,5 +455,82 @@ export const authService = {
     }
 
     return ObjectResult.createSuccessResult(null);
-  },
-};
+  }
+
+  async passwordRecovery(email: string): Promise<Nullable<ObjectResult>> {
+    const user = await this.usersRepository.findUserByLoginOrEmail(email);
+
+    if (!user) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Bad Request',
+        extensions: [{ field: 'email', message: 'User with this email not exist' }],
+      });
+    }
+
+    // Генерация нового кода и даты истечения
+    const updatedEmailConfirmation = {
+      confirmationCode: randomUUID(),
+      expirationDate: add(new Date(), { days: 1 }),
+      isConfirmed: false,
+    };
+
+    const updateResult = await this.usersRepository.update(user._id, {
+      emailConfirmation: updatedEmailConfirmation,
+    });
+
+    if (!updateResult) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.InternalServerError,
+        errorMessage: 'Database update failed',
+        extensions: 'Please try again later. If problem persists, contact support',
+      });
+    }
+
+    this.nodemailerService
+      .sendEmail(
+        email,
+        updatedEmailConfirmation.confirmationCode,
+        this.emailExamples.passwordRecoveryEmail,
+      )
+      .catch((e: unknown) => {
+        console.log('error in send email: ', e);
+      });
+
+    return ObjectResult.createSuccessResult(null);
+  }
+
+  async updatePassword(dto: NewPasswordInputDto): Promise<Nullable<ObjectResult>> {
+    const { newPassword, recoveryCode } = dto;
+
+    console.log(recoveryCode);
+
+    const user = await this.usersRepository.findUserByConfirmationCode(recoveryCode);
+
+    if (!user) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Bad Request',
+        extensions: [{ field: 'recoveryCode!!!!!!!!!!!!!!', message: 'invalid recoveryCode' }],
+      });
+    }
+
+    const passwordHash = await this.bcryptService.generateHash(newPassword);
+
+    const updatedUser = User.updateUserPass(user, passwordHash);
+
+    await this.usersRepository.update(user._id, updatedUser);
+
+    this.nodemailerService
+      .sendEmail(
+        user.email,
+        user.emailConfirmation.confirmationCode,
+        this.emailExamples.passwordRecoveryEmail,
+      )
+      .catch((e: unknown) => {
+        console.log('error in send email: ', e);
+      });
+
+    return ObjectResult.createSuccessResult(null);
+  }
+}

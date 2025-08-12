@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus, IdType } from '../../../../core';
-import { commentsQueryRepository } from '../../repositories/comments.query-repository';
+import { container } from '../../../../composition-root';
+import { CommentsQueryRepository } from '../../repositories/comments.query-repository';
 
 export async function commentExistValidation(
   req: Request<IdType>,
   res: Response,
   next: NextFunction,
 ) {
+  const commentsQueryRepository = container.get(CommentsQueryRepository);
   const commentId = req.params.id;
 
   const comment = await commentsQueryRepository.findById(commentId);

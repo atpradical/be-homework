@@ -1,17 +1,20 @@
+import request from 'supertest';
 import express from 'express';
 import { setupApp } from '../../src/setup-app';
 import { runDB, stopDb } from '../../src/db/mongo.db';
 import { appConfig } from '../../src/core/config';
-import request from 'supertest';
 import { testingDtosCreator } from './utils/testingDtosCreator';
 import { USERS_PATH } from '../../src/core';
 import {
   ADMIN_PASSWORD,
   ADMIN_USERNAME,
 } from '../../src/features/auth/api/guards/super-admin.guard';
-import { jwtService } from '../../src/features/auth/adapters/jwt.service';
 import { userAgents } from './utils/user-agents';
 import { UserViewModel } from '../../src/features/users/types';
+import { container } from '../../src/composition-root';
+import { JwtService } from '../../src/features/auth/adapters/jwt.service';
+
+const jwtService = container.get<JwtService>(JwtService);
 
 describe('Multi Devices test', () => {
   const app = express();
@@ -107,7 +110,7 @@ describe('Multi Devices test', () => {
   });
 
   it('Update RefreshToken for device 1', async () => {
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const response = await request(app)
       .post('/auth/refresh-token')
@@ -123,18 +126,15 @@ describe('Multi Devices test', () => {
       .split(';')[0]
       .split('=')[1];
 
-    const payloadNew = await jwtService.verifyRefreshToken(newRefreshToken);
     const payloadOld = await jwtService.verifyRefreshToken(userDevices['device1'].token);
+    const payloadNew = await jwtService.verifyRefreshToken(newRefreshToken);
 
     expect(newRefreshToken).toBeDefined();
     expect(payloadNew.userId).toEqual(payloadOld.userId);
     expect(payloadNew.deviceId).toEqual(payloadOld.deviceId);
     // Дата exp должна измениться
 
-    console.log(payloadNew.exp);
-    console.log(payloadOld.exp);
-    expect(payloadNew.exp).not.toBe(payloadOld.exp); //todo: может ли такое быть что дата остается одна и таже в тестах?
-
+    expect(payloadNew.iat).not.toBe(payloadOld.iat);
     userDevices['device1'].token = newRefreshToken;
   });
 

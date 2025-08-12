@@ -1,6 +1,6 @@
-import { nodemailerService } from '../../src/features/auth/adapters/nodemailer.service';
+import { NodemailerService } from '../../src/features/auth/adapters/nodemailer.service';
 
-export const emailServiceMock: typeof nodemailerService = {
+export const emailServiceMock: typeof NodemailerService = {
   async sendEmail(
     email: string,
     code: string,

@@ -1,37 +1,36 @@
 import { Router } from 'express';
-import { loginHandler } from './handlers/login-handler';
 import { inputValidationResultMiddleware, ipRestrictionMiddleware } from '../../../core';
 import { authInputValidation } from './middleware/auth.input-dto.validation';
 import { accessTokenGuard } from './guards/access-token.guard';
-import { meHandler } from './handlers/me.handler';
-import { registrationHandler } from './handlers/registration.handler';
 import { registrationInputValidation } from './middleware/registration.input-dto.validation';
 import { registrationEmailResendingInputValidation } from './middleware/registration-email-resending.input-dto.validation';
-import { registrationEmailResendingHandler } from './handlers/registration-emai-resending.handler';
 import { codeValidation } from './middleware/registration-confirmation.input-dto.validation';
-import { registrationConfirmationHandler } from './handlers/registration-confirmation.handler';
 import { refreshTokenGuard } from './guards/refresh-token.guard';
-import { refreshTokenHandler } from './handlers/refresh-token.handler';
-import { logoutHandler } from './handlers/logout.handler';
+import { passwordRecoveryInputValidation } from './middleware/password-recovery.input-dto.validation';
+import { newPasswordInputValidation } from './middleware/new-password.input-dto.validation';
+import { container } from '../../../composition-root';
+import { AuthController } from './auth.controller';
 
 export const authRouter = Router({});
+
+const authController = container.get(AuthController);
 
 authRouter.post(
   '/login',
   ipRestrictionMiddleware,
   authInputValidation,
   inputValidationResultMiddleware,
-  loginHandler,
+  authController.loginHandler.bind(authController),
 );
 
-authRouter.get('/me', accessTokenGuard, meHandler);
+authRouter.get('/me', accessTokenGuard, authController.meHandler.bind(authController));
 
 authRouter.post(
   '/registration',
   ipRestrictionMiddleware,
   registrationInputValidation,
   inputValidationResultMiddleware,
-  registrationHandler,
+  authController.registrationHandler.bind(authController),
 );
 
 authRouter.post(
@@ -39,7 +38,7 @@ authRouter.post(
   ipRestrictionMiddleware,
   registrationEmailResendingInputValidation,
   inputValidationResultMiddleware,
-  registrationEmailResendingHandler,
+  authController.registrationEmailResendingHandler.bind(authController),
 );
 
 authRouter.post(
@@ -47,9 +46,29 @@ authRouter.post(
   ipRestrictionMiddleware,
   codeValidation,
   inputValidationResultMiddleware,
-  registrationConfirmationHandler,
+  authController.registrationConfirmationHandler.bind(authController),
 );
 
-authRouter.post('/refresh-token', refreshTokenGuard, refreshTokenHandler);
+authRouter.post(
+  '/refresh-token',
+  refreshTokenGuard,
+  authController.refreshTokenHandler.bind(authController),
+);
 
-authRouter.post('/logout', refreshTokenGuard, logoutHandler);
+authRouter.post('/logout', refreshTokenGuard, authController.logoutHandler.bind(authController));
+
+authRouter.post(
+  '/password-recovery',
+  ipRestrictionMiddleware,
+  passwordRecoveryInputValidation,
+  inputValidationResultMiddleware,
+  authController.passwordRecoveryHandler.bind(authController),
+);
+
+authRouter.post(
+  '/new-password',
+  ipRestrictionMiddleware,
+  newPasswordInputValidation,
+  inputValidationResultMiddleware,
+  authController.newPasswordHandler.bind(authController),
+);

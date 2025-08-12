@@ -1,11 +1,15 @@
-import { authDeviceSessionRepository } from '../repositories/auth-device-session.repository';
+import { AuthDeviceSessionRepository } from '../repositories/auth-device-session.repository';
 import { AuthDeviceSession } from './auth-device-session.entity';
 import { ObjectResult } from '../../../core/result/object-result.entity';
 import { ResultStatus } from '../../../core/result/resultCode';
+import { injectable } from 'inversify';
 
-export const authDeviceSessionService = {
+@injectable()
+export class AuthDeviceSessionService {
+  constructor(private authDeviceSessionRepository: AuthDeviceSessionRepository) {}
+
   async create(newDevice: AuthDeviceSession): Promise<ObjectResult<string>> {
-    const sessionId = await authDeviceSessionRepository.create(newDevice);
+    const sessionId = await this.authDeviceSessionRepository.create(newDevice);
 
     if (!sessionId) {
       return ObjectResult.createErrorResult({
@@ -16,14 +20,14 @@ export const authDeviceSessionService = {
     }
 
     return ObjectResult.createSuccessResult(sessionId);
-  },
+  }
 
   async findById(deviceId: string): Promise<AuthDeviceSession | null> {
-    return authDeviceSessionRepository.findById(deviceId);
-  },
+    return this.authDeviceSessionRepository.findById(deviceId);
+  }
 
-  async updateExpiresAt(deviceId: string, issuedAt: Date, expiresAt: Date): Promise<ObjectResult> {
-    const result = authDeviceSessionRepository.updateExpiresAt(deviceId, issuedAt, expiresAt);
+  async updateDates(deviceId: string, issuedAt: Date, expiresAt: Date): Promise<ObjectResult> {
+    const result = this.authDeviceSessionRepository.updateDates(deviceId, issuedAt, expiresAt);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -34,11 +38,11 @@ export const authDeviceSessionService = {
     }
 
     return ObjectResult.createSuccessResult(null);
-  },
+  }
 
   async deleteByDeviceId(deviceId: string, userId: string): Promise<ObjectResult> {
     // Находим сессию по deviceId
-    const session = await authDeviceSessionRepository.findById(deviceId);
+    const session = await this.authDeviceSessionRepository.findById(deviceId);
 
     if (!session) {
       return ObjectResult.createErrorResult({
@@ -60,7 +64,7 @@ export const authDeviceSessionService = {
     }
 
     // удаляем сессию по deviceId
-    const result = await authDeviceSessionRepository.deleteById(deviceId);
+    const result = await this.authDeviceSessionRepository.deleteById(deviceId);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -71,10 +75,10 @@ export const authDeviceSessionService = {
     }
 
     return ObjectResult.createSuccessResult(null);
-  },
+  }
 
   async deleteAllExceptCurrent(userId: string, deviceId: string): Promise<ObjectResult> {
-    const result = await authDeviceSessionRepository.deleteAllExceptCurrent(userId, deviceId);
+    const result = await this.authDeviceSessionRepository.deleteAllExceptCurrent(userId, deviceId);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -85,5 +89,5 @@ export const authDeviceSessionService = {
     }
 
     return ObjectResult.createSuccessResult(null);
-  },
-};
+  }
+}

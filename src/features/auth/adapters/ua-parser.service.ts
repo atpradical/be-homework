@@ -1,7 +1,9 @@
 import { IResult, UAParser } from 'ua-parser-js';
+import { injectable } from 'inversify';
 
-export const uaParserService = {
+@injectable()
+export class UaParserService {
   async parse(ua: string): Promise<IResult> {
     return new UAParser(ua).getResult();
-  },
-};
+  }
+}
