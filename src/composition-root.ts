@@ -27,6 +27,8 @@ import { CommentsController } from './features/comments/api/comments.controller'
 import { PostsController } from './features/posts/api/posts.controller';
 import { UsersController } from './features/users/api/users.controller';
 import { Container } from 'inversify';
+import { IpRestrictionService } from './features/ip-restriction/domain/ip-restriction.service';
+import { IpRestrictionRepository } from './features/ip-restriction/repositories/ip-restriction.repository';
 
 export const container = new Container();
 
@@ -52,6 +54,7 @@ container
 container
   .bind<AuthDeviceSessionQueryRepository>(AuthDeviceSessionQueryRepository)
   .to(AuthDeviceSessionQueryRepository);
+container.bind<IpRestrictionRepository>(IpRestrictionRepository).to(IpRestrictionRepository);
 
 // Регистрируем сервисы
 container.bind<CommentsService>(CommentsService).to(CommentsService);
@@ -60,6 +63,7 @@ container.bind<UsersService>(UsersService).to(UsersService);
 container.bind<PostsService>(PostsService).to(PostsService);
 container.bind<AuthDeviceSessionService>(AuthDeviceSessionService).to(AuthDeviceSessionService);
 container.bind<AuthService>(AuthService).to(AuthService);
+container.bind<IpRestrictionService>(IpRestrictionService).to(IpRestrictionService);
 
 // Регистрируем контроллеры
 container.bind<AuthController>(AuthController).to(AuthController);

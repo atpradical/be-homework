@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../enums';
-import { ipRestrictedService } from '../../features/ip-restriction/domain/ip-restricted.service';
+import { ipRestrictedService } from '../../features/ip-restriction/domain/ip-restriction.service';
 import { ResultStatus } from '../result/resultCode';
 import { resultCodeToHttpException } from '../result/resultCodeToHttpException';
 
