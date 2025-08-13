@@ -24,19 +24,19 @@ blogsRouter
     blogsController.getBlogListHandler.bind(blogsController),
   )
 
+  .get(
+    '/:id',
+    routeIdValidation,
+    inputValidationResultMiddleware,
+    blogsController.getBlogHandler.bind(blogsController),
+  )
+
   .post(
     '/',
     superAdminGuard,
     blogsInputDtoValidation,
     inputValidationResultMiddleware,
     blogsController.createBlogHandler.bind(blogsController),
-  )
-
-  .get(
-    '/:id',
-    routeIdValidation,
-    inputValidationResultMiddleware,
-    blogsController.getBlogHandler.bind(blogsController),
   )
 
   .put(

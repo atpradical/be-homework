@@ -19,7 +19,7 @@ describe('Post API test', () => {
   setupApp(app);
 
   beforeAll(async () => {
-    await runDB(appConfig.MONGO_URL);
+    await runDB(appConfig.MONGO_URL, appConfig.DB_NAME);
 
     // Clear the database before tests
     await request(app).delete('/testing/all-data').expect(204);
@@ -140,6 +140,7 @@ describe('Post API test', () => {
 
   it('shouldn`t delete post by id if specified post is not exists: STATUS 404', async () => {
     const nonExistentId = new ObjectId();
+
     await request(app)
       .delete(POSTS_PATH + `/${nonExistentId}`)
       .auth(ADMIN_USERNAME, ADMIN_PASSWORD)

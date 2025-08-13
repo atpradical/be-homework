@@ -1,4 +1,3 @@
-import { UsersQueryRepository } from '../../users/repositories/users.query-repository';
 import { LoginInputDto } from '../types/login-input.dto';
 import { WithId } from 'mongodb';
 import { JwtService, RefreshTokenPayload } from '../adapters/jwt.service';
@@ -13,20 +12,22 @@ import { RegistrationEmailResendingInputDto } from '../types/registration-email-
 import { randomUUID } from 'node:crypto';
 import { add } from 'date-fns/add';
 import { RegistrationConfirmationInputDto } from '../types/registration-confirmation.input.dto';
-import { Nullable } from '../../../core';
+import { Nullable, UNKNOWN_DEVICE, UNKNOWN_IP } from '../../../core';
 import { AuthTokens } from '../types/auth-tokens.type';
 import { UaParserService } from '../adapters/ua-parser.service';
-import { AuthDeviceSession } from '../../auth-device-session/domain/auth-device-session.entity';
 import { UsersRepository } from '../../users/repositories/users.repository';
 import { NewPasswordInputDto } from '../types/new-password-input.dto';
 import { inject, injectable } from 'inversify';
 import { AuthDeviceSessionService } from '../../auth-device-session/domain/auth-device-session.service';
+import {
+  AuthDeviceSessionDocument,
+  AuthDeviceSessionModel,
+} from '../../../db/models/auth-device-session.model';
 
 @injectable()
 export class AuthService {
   constructor(
     @inject(UsersRepository) private usersRepository: UsersRepository,
-    @inject(UsersQueryRepository) private usersQueryRepository: UsersQueryRepository,
     @inject(JwtService) private jwtService: JwtService,
     @inject(BcryptService) private bcryptService: BcryptService,
     @inject(NodemailerService) private nodemailerService: NodemailerService,
@@ -68,7 +69,7 @@ export class AuthService {
   }
 
   async checkCredentials(dto: LoginInputDto): Promise<ObjectResult<WithId<User>>> {
-    const user = await this.usersQueryRepository.findUserByLoginOrEmail(dto.loginOrEmail);
+    const user = await this.usersRepository.findUserByLoginOrEmail(dto.loginOrEmail);
 
     if (!user) {
       return ObjectResult.createErrorResult({
@@ -105,9 +106,11 @@ export class AuthService {
   async registerUser(dto: RegistrationUserInputDto): Promise<Nullable<ObjectResult<User>>> {
     const { login, email, password } = dto;
 
-    const isSameLogin = await this.usersRepository.doesExistByLogin(login);
+    let existUser;
 
-    if (isSameLogin) {
+    existUser = await this.usersRepository.findUserByLoginOrEmail(login);
+
+    if (existUser) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
@@ -115,9 +118,9 @@ export class AuthService {
       });
     }
 
-    const isSameEmail = await this.usersRepository.doesExistByEmail(email);
+    existUser = await this.usersRepository.findUserByLoginOrEmail(email);
 
-    if (isSameEmail) {
+    if (existUser) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
@@ -129,7 +132,7 @@ export class AuthService {
 
     const user = new User(login, email, passwordHash);
 
-    await this.usersRepository.create(user);
+    // await this.usersRepository.create(user);
 
     this.nodemailerService
       .sendEmail(
@@ -175,9 +178,9 @@ export class AuthService {
       isConfirmed: false,
     };
 
-    const updateResult = await this.usersRepository.update(user._id, {
-      emailConfirmation: updatedEmailConfirmation,
-    });
+    user.emailConfirmation = updatedEmailConfirmation;
+
+    const updateResult = await this.usersRepository.save(user);
 
     if (!updateResult) {
       return ObjectResult.createErrorResult({
@@ -229,13 +232,13 @@ export class AuthService {
       });
     }
 
-    const updateResult = await this.usersRepository.update(user._id, {
-      emailConfirmation: {
-        isConfirmed: true,
-        confirmationCode: user.emailConfirmation.confirmationCode,
-        expirationDate: user.emailConfirmation.expirationDate,
-      },
-    });
+    user.emailConfirmation = {
+      isConfirmed: true,
+      confirmationCode: user.emailConfirmation.confirmationCode,
+      expirationDate: user.emailConfirmation.expirationDate,
+    };
+
+    const updateResult = await this.usersRepository.save(user);
 
     if (!updateResult) {
       return ObjectResult.createErrorResult({
@@ -283,17 +286,6 @@ export class AuthService {
       });
     }
 
-    /* Проверяем версию токена в зарегистрированной сессии юзера
-     * const isTokenInBlackList = await tokenBlacklistRepository.findTokenInBlackList(token);
-     *
-     * if (isTokenInBlackList) {
-     *   return ObjectResult.createErrorResult({
-     *     status: ResultStatus.Unauthorized,
-     *     errorMessage: 'Unauthorized',
-     *     extensions: [{ field: 'token', message: 'Invalid token' }],
-     *   });
-     * }
-     */
     const authDeviceSession = await this.authDeviceSessionService.findById(payload.deviceId);
 
     if (!authDeviceSession) {
@@ -331,18 +323,6 @@ export class AuthService {
     deviceId: string,
     tokenExp: number,
   ): Promise<ObjectResult<Nullable<{ accessToken: string; refreshToken: string }>>> {
-    /* Проверяем версию токена в зарегистрированной сессии юзера (вместо использования tokenBlacklistRepository)
-     *  const blacklistResult = await tokenBlacklistRepository.addTokenToBlackList(token);
-     *
-     *   if (!blacklistResult) {
-     *   return ObjectResult.createErrorResult({
-     *     status: ResultStatus.InternalServerError,
-     *     errorMessage: 'Database update failed',
-     *     extensions: 'Please try again later. If problem persists, contact support',
-     *   });
-     *  }
-     *
-     */
     const authDeviceSession = await this.authDeviceSessionService.findById(deviceId);
 
     if (
@@ -357,7 +337,7 @@ export class AuthService {
     }
 
     // Генерим новую пару токенов и обновляем expiresAt в сессии
-    const result = await this.generateTokensAndUpdateSession(userId, deviceId);
+    const result = await this.generateTokensAndUpdateSession(userId, authDeviceSession);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -387,16 +367,16 @@ export class AuthService {
     const refreshToken = await this.jwtService.createRefreshToken(userId, deviceId);
     const decodedRefreshToken = await this.jwtService.decodeToken(refreshToken);
 
-    const newDevice = AuthDeviceSession.create({
-      deviceId,
-      userId,
-      ip,
-      deviceName,
-      expiresAt: new Date(decodedRefreshToken.exp * 1000),
-      issuedAt: new Date(decodedRefreshToken.iat * 1000),
-    });
+    const newDevice = new AuthDeviceSessionModel();
 
-    const sessionCreateResult = await this.authDeviceSessionService.create(newDevice);
+    newDevice.userId = userId;
+    newDevice.deviceId = deviceId;
+    newDevice.deviceName = deviceName ?? UNKNOWN_DEVICE;
+    newDevice.ip = ip ?? UNKNOWN_IP;
+    newDevice.issuedAt = new Date(decodedRefreshToken.iat * 1000);
+    newDevice.expiresAt = new Date(decodedRefreshToken.exp * 1000);
+
+    const sessionCreateResult = await this.authDeviceSessionService.save(newDevice);
 
     if (sessionCreateResult.status !== ResultStatus.Success) {
       return null;
@@ -410,19 +390,23 @@ export class AuthService {
 
   async generateTokensAndUpdateSession(
     userId: string,
-    deviceId: string,
+    authDeviceSession: AuthDeviceSessionDocument,
   ): Promise<AuthTokens | null> {
     const accessToken = await this.jwtService.createToken(userId);
-    const refreshToken = await this.jwtService.createRefreshToken(userId, deviceId);
-    const decodedRefreshToken = await this.jwtService.decodeToken(refreshToken);
 
-    const updateResult = await this.authDeviceSessionService.updateDates(
-      deviceId,
-      new Date(decodedRefreshToken.iat * 1000),
-      new Date(decodedRefreshToken.exp * 1000),
+    const refreshToken = await this.jwtService.createRefreshToken(
+      userId,
+      authDeviceSession.deviceId,
     );
 
-    if (updateResult.status !== ResultStatus.Success) {
+    const decodedRefreshToken = await this.jwtService.decodeToken(refreshToken);
+
+    authDeviceSession.issuedAt = new Date(decodedRefreshToken.iat * 1000);
+    authDeviceSession.expiresAt = new Date(decodedRefreshToken.exp * 1000);
+
+    const result = await this.authDeviceSessionService.save(authDeviceSession);
+
+    if (result.status !== ResultStatus.Success) {
       return null;
     }
 
@@ -433,17 +417,6 @@ export class AuthService {
   }
 
   async logout(deviceId: string, userId: string): Promise<ObjectResult> {
-    /* Удаляем сессию при logout (вместо использования tokenBlacklistRepository)
-     *const result = await tokenBlacklistRepository.addTokenToBlackList(token);
-     *
-     * if (!result) {
-     *   return ObjectResult.createErrorResult({
-     *     status: ResultStatus.InternalServerError,
-     *     errorMessage: 'Database update failed',
-     *     extensions: 'Please try again later. If problem persists, contact support',
-     *   });
-     *  }
-     * */
     const deleteResult = await this.authDeviceSessionService.deleteByDeviceId(deviceId, userId);
 
     if (deleteResult.status !== ResultStatus.Success) {
@@ -475,9 +448,9 @@ export class AuthService {
       isConfirmed: false,
     };
 
-    const updateResult = await this.usersRepository.update(user._id, {
-      emailConfirmation: updatedEmailConfirmation,
-    });
+    user.emailConfirmation = updatedEmailConfirmation;
+
+    const updateResult = await this.usersRepository.save(user);
 
     if (!updateResult) {
       return ObjectResult.createErrorResult({
@@ -503,23 +476,20 @@ export class AuthService {
   async updatePassword(dto: NewPasswordInputDto): Promise<Nullable<ObjectResult>> {
     const { newPassword, recoveryCode } = dto;
 
-    console.log(recoveryCode);
-
     const user = await this.usersRepository.findUserByConfirmationCode(recoveryCode);
 
     if (!user) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
-        extensions: [{ field: 'recoveryCode!!!!!!!!!!!!!!', message: 'invalid recoveryCode' }],
+        extensions: [{ field: 'recoveryCode', message: 'invalid recoveryCode' }],
       });
     }
 
-    const passwordHash = await this.bcryptService.generateHash(newPassword);
+    user.passwordHash = await this.bcryptService.generateHash(newPassword);
+    user.emailConfirmation.isConfirmed = true;
 
-    const updatedUser = User.updateUserPass(user, passwordHash);
-
-    await this.usersRepository.update(user._id, updatedUser);
+    await this.usersRepository.save(user);
 
     this.nodemailerService
       .sendEmail(

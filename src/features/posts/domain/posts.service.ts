@@ -6,34 +6,36 @@ import { ResultStatus } from '../../../core/result/resultCode';
 import { CommentInputDto } from '../../comments/types/comment.input.dto';
 import { ObjectResult } from '../../../core/result/object-result.entity';
 import { BlogsService } from '../../blogs/domain/blogs.service';
-import { PostsQueryRepository } from '../repositories/posts.query-repository';
 import { BlogsQueryRepository } from '../../blogs/repositories/blogs.query-repository';
 import { CommentsRepository } from '../../comments/repositories/comments.repository';
 import { Post } from './post.etntity';
 import { Comment } from '../../comments/domain/comment.entity';
-import { injectable } from 'inversify';
-import { UsersQueryRepository } from '../../users/repositories/users.query-repository';
+import { inject, injectable } from 'inversify';
+import { PostDocument, PostModel } from '../../../db/models/post.model';
+import { BlogsRepository } from '../../blogs/repositories/blogs.repository';
+import { UsersRepository } from '../../users/repositories/users.repository';
+import { CommentModel } from '../../../db/models/comments.model';
 
 @injectable()
 export class PostsService {
   constructor(
-    private postsRepository: PostsRepository,
-    private postsQueryRepository: PostsQueryRepository,
-    private blogsService: BlogsService,
-    private blogsQueryRepository: BlogsQueryRepository,
-    private commentsRepository: CommentsRepository,
-    private usersQueryRepository: UsersQueryRepository,
+    @inject(PostsRepository) private postsRepository: PostsRepository,
+    @inject(BlogsService) private blogsService: BlogsService,
+    @inject(BlogsRepository) private blogsRepository: BlogsRepository,
+    @inject(BlogsQueryRepository) private blogsQueryRepository: BlogsQueryRepository,
+    @inject(CommentsRepository) private commentsRepository: CommentsRepository,
+    @inject(UsersRepository) private usersRepository: UsersRepository,
   ) {}
 
   async findAll(queryDto: PostQueryInput): Promise<{ items: WithId<Post>[]; totalCount: number }> {
-    return this.postsQueryRepository.findAll(queryDto);
+    return this.postsRepository.findAll(queryDto);
   }
 
   async findById(id: string): Promise<WithId<Post>> {
-    return this.postsQueryRepository.findById(id);
+    return this.postsRepository.findById(id);
   }
 
-  async create(dto: PostInputDto): Promise<ObjectResult<WithId<Post> | null>> {
+  async create(dto: PostInputDto): Promise<ObjectResult<PostDocument | null>> {
     const blog = await this.blogsService.findById(dto.blogId);
 
     if (!blog) {
@@ -44,21 +46,29 @@ export class PostsService {
       });
     }
 
-    const newPost = Post.create({
-      title: dto.title,
-      shortDescription: dto.shortDescription,
-      content: dto.content,
-      blogId: dto.blogId,
-      blogName: blog?.name,
-    });
+    const newPost = new PostModel();
 
-    const result = await this.postsRepository.create(newPost);
+    newPost.title = dto.title;
+    newPost.shortDescription = dto.shortDescription;
+    newPost.content = dto.content;
+    newPost.blogId = dto.blogId;
+    newPost.blogName = blog?.name;
+
+    const result = await this.postsRepository.save(newPost);
+
+    if (!result) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.InternalServerError,
+        errorMessage: 'InternalServerError',
+        extensions: 'Oops.. something went wrong, please try again later',
+      });
+    }
 
     return ObjectResult.createSuccessResult(result);
   }
 
   async update(id: string, dto: PostInputDto): Promise<ObjectResult> {
-    const post = await this.postsQueryRepository.findById(id);
+    const post = await this.postsRepository.findById(id);
 
     if (!post) {
       return ObjectResult.createErrorResult({
@@ -68,7 +78,12 @@ export class PostsService {
       });
     }
 
-    const result = await this.postsRepository.update(id, dto);
+    post.title = dto.title;
+    post.shortDescription = dto.shortDescription;
+    post.content = dto.content;
+    post.blogId = dto.blogId;
+
+    const result = await this.postsRepository.save(post);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -82,23 +97,13 @@ export class PostsService {
   }
 
   async delete(id: string): Promise<ObjectResult> {
-    const post = await this.postsQueryRepository.findById(id);
+    const isDeleted = await this.postsRepository.deleteById(id);
 
-    if (!post) {
+    if (!isDeleted) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.NotFound,
         errorMessage: 'NotFound',
-        extensions: [],
-      });
-    }
-
-    const result = await this.postsRepository.delete(id);
-
-    if (!result) {
-      return ObjectResult.createErrorResult({
-        status: ResultStatus.InternalServerError,
-        errorMessage: 'Database update failed',
-        extensions: 'Please try again later. If problem persists, contact support',
+        extensions: `Post with id:${id} not found`,
       });
     }
 
@@ -111,8 +116,8 @@ export class PostsService {
   }: {
     blogId: string;
     queryDto: PostQueryInput;
-  }): Promise<ObjectResult<{ items: WithId<Post>[]; totalCount: number }>> {
-    const blog = await this.blogsQueryRepository.findById(blogId);
+  }): Promise<ObjectResult<{ items: PostDocument[]; totalCount: number }>> {
+    const blog = await this.blogsRepository.findById(blogId);
 
     if (!blog) {
       return ObjectResult.createErrorResult({
@@ -122,7 +127,7 @@ export class PostsService {
       });
     }
 
-    const result = await this.postsQueryRepository.findPostsByBlog(blogId, queryDto);
+    const result = await this.postsRepository.findByBlogId(blogId, queryDto);
 
     return ObjectResult.createSuccessResult(result);
   }
@@ -133,8 +138,8 @@ export class PostsService {
   }: {
     blogId: string;
     dto: Omit<PostInputDto, 'blogId'>;
-  }): Promise<ObjectResult<WithId<Post>>> {
-    const blog = await this.blogsQueryRepository.findById(blogId);
+  }): Promise<ObjectResult<PostDocument>> {
+    const blog = await this.blogsRepository.findById(blogId);
 
     if (!blog) {
       return ObjectResult.createErrorResult({
@@ -144,15 +149,15 @@ export class PostsService {
       });
     }
 
-    const newPost = Post.create({
-      title: dto.title,
-      shortDescription: dto.shortDescription,
-      content: dto.content,
-      blogId: blogId,
-      blogName: blog.name,
-    });
+    const newPost = new PostModel();
 
-    const result = await this.postsRepository.create(newPost);
+    newPost.title = dto.title;
+    newPost.shortDescription = dto.shortDescription;
+    newPost.content = dto.content;
+    newPost.blogId = blogId;
+    newPost.blogName = blog.name;
+
+    const result = await this.postsRepository.save(newPost);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -170,7 +175,7 @@ export class PostsService {
     postId,
     dto,
   }: CreateCommentArgs): Promise<ObjectResult<WithId<Comment | null>>> {
-    const userData = await this.usersQueryRepository.findUserById(userId);
+    const userData = await this.usersRepository.findUserById(userId);
 
     if (!userData) {
       return ObjectResult.createErrorResult({
@@ -180,7 +185,7 @@ export class PostsService {
       });
     }
 
-    const postData = await this.postsQueryRepository.findById(postId);
+    const postData = await this.postsRepository.findById(postId);
 
     if (!postData) {
       return ObjectResult.createErrorResult({
@@ -190,17 +195,16 @@ export class PostsService {
       });
     }
 
-    const newComment = Comment.create({
-      commentatorInfo: {
-        userId: userData._id.toString(),
-        userLogin: userData.login,
-      },
-      postId: postData._id.toString(),
-      content: dto.content,
-      createdAt: new Date(),
-    });
+    const newComment = new CommentModel();
 
-    const result = await this.commentsRepository.create(newComment);
+    newComment.postId = postData._id.toString();
+    newComment.content = dto.content;
+    newComment.commentatorInfo = {
+      userId: userData._id.toString(),
+      userLogin: userData.login,
+    };
+
+    const result = await this.commentsRepository.save(newComment);
 
     if (!result) {
       return ObjectResult.createErrorResult({

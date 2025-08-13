@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns/add';
-import { usersCollection } from '../../src/db/mongo.db';
+import { UserModel } from '../../src/db/models/user.model';
 
 type RegisterUserPayloadType = {
   login: string;
@@ -65,10 +65,10 @@ export const testSeeder = {
       },
     };
 
-    const res = await usersCollection.insertOne({ ...newUser });
+    const res = await UserModel.insertOne({ ...newUser });
 
     return {
-      id: res.insertedId.toString(),
+      id: res._id.toString(),
       ...newUser,
     };
   },

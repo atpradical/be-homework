@@ -2,7 +2,6 @@ import { CommentInputDto } from '../types/comment.input.dto';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { ObjectResult } from '../../../core/result/object-result.entity';
 import { CommentsRepository } from '../repositories/comments.repository';
-import { CommentsQueryRepository } from '../repositories/comments.query-repository';
 import { inject, injectable } from 'inversify';
 
 type CommentUpdateArgs = {
@@ -13,13 +12,10 @@ type CommentUpdateArgs = {
 
 @injectable()
 export class CommentsService {
-  constructor(
-    @inject(CommentsRepository) private commentsRepository: CommentsRepository,
-    @inject(CommentsQueryRepository) private commentsQueryRepository: CommentsQueryRepository,
-  ) {}
+  constructor(@inject(CommentsRepository) private commentsRepository: CommentsRepository) {}
 
   async update({ userId, id, dto }: CommentUpdateArgs): Promise<ObjectResult> {
-    const comment = await this.commentsQueryRepository.findById(id);
+    const comment = await this.commentsRepository.findById(id);
 
     if (!comment) {
       return ObjectResult.createErrorResult({
@@ -29,6 +25,7 @@ export class CommentsService {
       });
     }
 
+    // Проверка, что коммент принадлежит юзеру
     if (userId !== comment.commentatorInfo.userId) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.Forbidden,
@@ -39,7 +36,9 @@ export class CommentsService {
       });
     }
 
-    const result = await this.commentsRepository.update({ id, dto });
+    comment.content = dto.content;
+
+    const result = await this.commentsRepository.save(comment);
 
     if (!result) {
       return ObjectResult.createErrorResult({
@@ -53,7 +52,7 @@ export class CommentsService {
   }
 
   async delete({ id, userId }: { id: string; userId: string }): Promise<ObjectResult> {
-    const comment = await this.commentsQueryRepository.findById(id);
+    const comment = await this.commentsRepository.findById(id);
 
     if (!comment) {
       return ObjectResult.createErrorResult({
@@ -73,7 +72,7 @@ export class CommentsService {
       });
     }
 
-    const result = await this.commentsRepository.delete(id);
+    const result = await this.commentsRepository.deleteById(id);
 
     if (!result) {
       return ObjectResult.createErrorResult({

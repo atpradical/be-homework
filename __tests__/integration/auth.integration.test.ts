@@ -1,6 +1,6 @@
 import { testSeeder } from './test.seeder';
 import { ResultStatus } from '../../src/core/result/resultCode';
-import { client, dropDb, runDB, stopDb } from '../../src/db/mongo.db';
+import { dropDb, runDB, stopDb } from '../../src/db/mongo.db';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { container } from '../../src/composition-root';
 import { AuthService } from '../../src/features/auth/domain/auth.service';
@@ -16,11 +16,12 @@ describe('AUTH-INTEGRATION', () => {
     await runDB(url);
   }, 20000);
 
-  beforeEach(async () => {
-    if (client) {
-      await dropDb();
-    }
-  });
+  // beforeEach(async () => {
+  //   await request
+  //   if (client) {
+  //     await request(app).delete('/testing/all-data').expect(204);
+  //   }
+  // });
 
   afterAll(async () => {
     await dropDb();

@@ -1,21 +1,27 @@
-import { authDeviceSessionCollection } from '../../../db/mongo.db';
 import { DeviceViewModel } from '../types';
 import { injectable } from 'inversify';
+import {
+  AuthDeviceSessionDocument,
+  AuthDeviceSessionModel,
+} from '../../../db/models/auth-device-session.model';
 
 @injectable()
 export class AuthDeviceSessionQueryRepository {
   async findAllActiveSessions(userId: string, expiresAt: Date): Promise<DeviceViewModel[]> {
-    return await authDeviceSessionCollection
-      .find({ userId, expiresAt: { $gte: expiresAt } })
-      .sort({ _id: 1 })
-      .toArray()
-      .then((data) =>
-        data.map((d) => ({
-          ip: d.ip,
-          title: d.deviceName,
-          lastActiveDate: d.issuedAt.toISOString(),
-          deviceId: d.deviceId,
-        })),
-      );
+    const authSessions = await AuthDeviceSessionModel.find({
+      userId,
+      expiresAt: { $gte: expiresAt },
+    }).sort({ _id: 1 });
+
+    return authSessions.map((el) => ({
+      ip: el.ip,
+      title: el.deviceName,
+      lastActiveDate: el.issuedAt.toISOString(),
+      deviceId: el.deviceId,
+    }));
+  }
+
+  async findById(deviceId: string): Promise<AuthDeviceSessionDocument> {
+    return AuthDeviceSessionModel.findOne({ deviceId });
   }
 }

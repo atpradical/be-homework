@@ -1,12 +1,10 @@
-import { Blog } from '../types';
-import { blogsCollection } from '../../../db/mongo.db';
-import { ObjectId, WithId } from 'mongodb';
-import { BlogQueryInput } from '../types/blog-query.input';
 import { injectable } from 'inversify';
+import { BlogQueryInput } from '../types/blog-query.input';
+import { BlogDocument, BlogModel } from '../../../db/models/blog.model';
 
 @injectable()
 export class BlogsQueryRepository {
-  async findAll(queryDto: BlogQueryInput): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
+  async findAll(queryDto: BlogQueryInput): Promise<{ items: BlogDocument[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection, searchWebsiteUrlTerm, searchNameTerm } =
       queryDto;
 
@@ -21,19 +19,19 @@ export class BlogsQueryRepository {
       filter.websiteUrl = { $regex: searchWebsiteUrlTerm, $options: 'i' };
     }
 
-    const items = await blogsCollection
-      .find(filter)
+    const blogsQuery = BlogModel.find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
-      .limit(pageSize)
-      .toArray();
+      .limit(pageSize);
 
-    const totalCount = await blogsCollection.countDocuments(filter);
+    const totalCountQuery = BlogModel.countDocuments(filter);
+
+    const [items, totalCount] = await Promise.all([blogsQuery.exec(), totalCountQuery.exec()]);
 
     return { items, totalCount };
   }
 
-  async findById(id: string): Promise<WithId<Blog> | null> {
-    return await blogsCollection.findOne({ _id: new ObjectId(id) });
+  async findById(id: string): Promise<BlogDocument> {
+    return BlogModel.findById(id);
   }
 }

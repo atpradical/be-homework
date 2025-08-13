@@ -11,7 +11,7 @@ const bootstrap = async () => {
   setupApp(app);
   const PORT = appConfig.PORT;
 
-  await runDB(appConfig.MONGO_URL);
+  await runDB(appConfig.MONGO_URL, appConfig.DB_NAME);
   await setupDBIndexes();
 
   app.listen(PORT, () => {

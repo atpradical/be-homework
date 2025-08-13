@@ -1,35 +1,23 @@
 import { AuthDeviceSessionRepository } from '../repositories/auth-device-session.repository';
-import { AuthDeviceSession } from './auth-device-session.entity';
 import { ObjectResult } from '../../../core/result/object-result.entity';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { injectable } from 'inversify';
+import { AuthDeviceSessionDocument } from '../../../db/models/auth-device-session.model';
 
 @injectable()
 export class AuthDeviceSessionService {
   constructor(private authDeviceSessionRepository: AuthDeviceSessionRepository) {}
 
-  async create(newDevice: AuthDeviceSession): Promise<ObjectResult<string>> {
-    const sessionId = await this.authDeviceSessionRepository.create(newDevice);
-
-    if (!sessionId) {
-      return ObjectResult.createErrorResult({
-        status: ResultStatus.InternalServerError,
-        errorMessage: 'InternalServerError',
-        extensions: 'Oops, something went wrong',
-      });
-    }
-
-    return ObjectResult.createSuccessResult(sessionId);
-  }
-
-  async findById(deviceId: string): Promise<AuthDeviceSession | null> {
+  async findById(deviceId: string): Promise<AuthDeviceSessionDocument | null> {
     return this.authDeviceSessionRepository.findById(deviceId);
   }
 
-  async updateDates(deviceId: string, issuedAt: Date, expiresAt: Date): Promise<ObjectResult> {
-    const result = this.authDeviceSessionRepository.updateDates(deviceId, issuedAt, expiresAt);
+  async save(
+    newDevice: AuthDeviceSessionDocument,
+  ): Promise<ObjectResult<AuthDeviceSessionDocument>> {
+    const deviceSession = await this.authDeviceSessionRepository.save(newDevice);
 
-    if (!result) {
+    if (!deviceSession) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.InternalServerError,
         errorMessage: 'InternalServerError',
@@ -37,7 +25,7 @@ export class AuthDeviceSessionService {
       });
     }
 
-    return ObjectResult.createSuccessResult(null);
+    return ObjectResult.createSuccessResult(deviceSession);
   }
 
   async deleteByDeviceId(deviceId: string, userId: string): Promise<ObjectResult> {

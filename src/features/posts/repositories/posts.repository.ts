@@ -1,88 +1,59 @@
-import { PostInputDto } from '../types/post-input.dto';
-import { postsCollection } from '../../../db/mongo.db';
-import { ObjectId, WithId } from 'mongodb';
-import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 import { PostQueryInput } from '../types/post-query.input';
-import { Post } from '../domain/post.etntity';
 import { injectable } from 'inversify';
+import { PostDocument, PostModel } from '../../../db/models/post.model';
+import { ObjectId } from 'mongodb';
 
 @injectable()
 export class PostsRepository {
-  async findAll(queryDto: PostQueryInput): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+  async findAll(queryDto: PostQueryInput): Promise<{ items: PostDocument[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
 
     const skip = (pageNumber - 1) * pageSize;
 
-    const items = await postsCollection
-      .find()
+    const postsQuery = PostModel.find()
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
-      .limit(pageSize)
-      .toArray();
+      .limit(pageSize);
 
-    const totalCount = await postsCollection.countDocuments();
+    const countQuery = PostModel.countDocuments();
+
+    const [items, totalCount] = await Promise.all([postsQuery.exec(), countQuery.exec()]);
 
     return { items, totalCount };
   }
 
-  async findById(id: string): Promise<WithId<Post>> {
-    const post = await postsCollection.findOne({ _id: new ObjectId(id) });
-
-    if (!post) {
-      throw new RepositoryNotFoundError('Blog not exist');
-    }
-
-    return post;
+  async findById(id: string): Promise<PostDocument | null> {
+    return PostModel.findById(id);
   }
 
-  async create(newPost: Post): Promise<WithId<Post>> {
-    const insertResult = await postsCollection.insertOne(newPost);
-    return { ...newPost, _id: insertResult.insertedId };
-  }
-
-  async update(id: string, dto: PostInputDto): Promise<boolean> {
-    const updateResult = await postsCollection.updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          title: dto.title,
-          shortDescription: dto.shortDescription,
-          content: dto.content,
-          blogId: dto.blogId,
-        },
-      },
-    );
-
-    return updateResult.matchedCount === 1;
-  }
-
-  async delete(id: string): Promise<boolean> {
-    const deleteResult = await postsCollection.deleteOne({
-      _id: new ObjectId(id),
-    });
-
-    return deleteResult.deletedCount === 1;
-  }
-
-  async findPostsByBlog(
+  async findByBlogId(
     blogId: string,
     queryDto: PostQueryInput,
-  ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+  ): Promise<{ items: PostDocument[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
 
     const filter = { blogId: blogId };
 
     const skip = (pageNumber - 1) * pageSize;
 
-    const items = await postsCollection
-      .find(filter)
+    const postsQuery = PostModel.find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
-      .limit(pageSize)
-      .toArray();
+      .limit(pageSize);
 
-    const totalCount = await postsCollection.countDocuments({ blogId: blogId });
+    const countQuery = PostModel.countDocuments({ blogId: blogId });
+
+    const [items, totalCount] = await Promise.all([postsQuery.exec(), countQuery.exec()]);
 
     return { items, totalCount };
+  }
+
+  async save(post: PostDocument): Promise<PostDocument> {
+    return post.save();
+  }
+
+  async deleteById(id: string): Promise<boolean> {
+    const result = await PostModel.deleteOne({ _id: new ObjectId(id) }).exec();
+    return result.deletedCount >= 1;
   }
 }

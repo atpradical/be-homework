@@ -41,23 +41,6 @@ postsRouter
     postsController.getPostHandler.bind(postsController),
   )
 
-  .put(
-    '/:id',
-    superAdminGuard,
-    routeIdValidation,
-    postsInputValidation,
-    inputValidationResultMiddleware,
-    postsController.updatePostHandler.bind(postsController),
-  )
-
-  .delete(
-    '/:id',
-    superAdminGuard,
-    routeIdValidation,
-    inputValidationResultMiddleware,
-    postsController.deletePostHandler.bind(postsController),
-  )
-
   .get(
     '/:postId/comments',
     postIdValidation,
@@ -73,4 +56,21 @@ postsRouter
     commentsInputValidation,
     inputValidationResultMiddleware,
     postsController.createCommentHandler.bind(postsController),
+  )
+
+  .put(
+    '/:id',
+    superAdminGuard,
+    routeIdValidation,
+    postsInputValidation,
+    inputValidationResultMiddleware,
+    postsController.updatePostHandler.bind(postsController),
+  )
+
+  .delete(
+    '/:id',
+    superAdminGuard,
+    routeIdValidation,
+    inputValidationResultMiddleware,
+    postsController.deletePostHandler.bind(postsController),
   );

@@ -57,6 +57,21 @@ export class PostsController {
     }
   }
 
+  async getPostHandler(req: RequestWithParams<IdType>, res: Response<PostViewModel | null>) {
+    const id = req.params.id;
+
+    const result = await this.postsQueryRepository.findById(id);
+
+    if (!result) {
+      res.sendStatus(HttpStatus.NotFound);
+      return;
+    }
+
+    const postViewModel = mapToPostViewModel(result);
+    res.status(HttpStatus.Ok).send(postViewModel);
+    return;
+  }
+
   async createPostHandler(
     req: RequestWithBody<PostInputDto>,
     res: Response<PostViewModel | ExtensionType[] | string>,
@@ -70,21 +85,6 @@ export class PostsController {
 
     const postViewModel = mapToPostViewModel(result.data);
     res.status(HttpStatus.Created).send(postViewModel);
-    return;
-  }
-
-  async getPostHandler(req: RequestWithParams<IdType>, res: Response<PostViewModel | null>) {
-    const id = req.params.id;
-
-    const result = await this.postsQueryRepository.findById(id);
-
-    if (!result) {
-      res.sendStatus(HttpStatus.NotFound);
-      return;
-    }
-
-    const postViewModel = mapToPostViewModel(result);
-    res.status(HttpStatus.Ok).send(postViewModel);
     return;
   }
 
