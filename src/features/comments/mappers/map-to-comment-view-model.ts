@@ -18,9 +18,7 @@ export function mapToCommentViewModel(
     likesInfo: {
       likesCount: comment.likesCount,
       dislikesCount: comment.dislikesCount,
-      myStatus: () => {
-        return likeStatus ?? LikeStatus.None;
-      },
+      myStatus: likeStatus ?? LikeStatus.None,
     },
   };
 }
