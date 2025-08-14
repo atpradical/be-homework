@@ -31,6 +31,7 @@ import { IpRestrictionService } from './features/ip-restriction/domain/ip-restri
 import { IpRestrictionRepository } from './features/ip-restriction/repositories/ip-restriction.repository';
 import { LikesService } from './features/likes/domain/likes.service';
 import { LikesRepository } from './features/likes/repositories/likes.repository';
+import { LikesQueryRepository } from './features/likes/repositories/likes.query-repository';
 
 export const container = new Container();
 
@@ -57,6 +58,8 @@ container
   .bind<AuthDeviceSessionQueryRepository>(AuthDeviceSessionQueryRepository)
   .to(AuthDeviceSessionQueryRepository);
 container.bind<IpRestrictionRepository>(IpRestrictionRepository).to(IpRestrictionRepository);
+container.bind<LikesRepository>(LikesRepository).to(LikesRepository);
+container.bind<LikesQueryRepository>(LikesQueryRepository).to(LikesQueryRepository);
 
 // Регистрируем сервисы
 container.bind<CommentsService>(CommentsService).to(CommentsService);
@@ -77,4 +80,3 @@ container.bind<BlogsController>(BlogsController).to(BlogsController);
 container.bind<CommentsController>(CommentsController).to(CommentsController);
 container.bind<PostsController>(PostsController).to(PostsController);
 container.bind<UsersController>(UsersController).to(UsersController);
-container.bind<LikesRepository>(LikesRepository).to(LikesRepository);
