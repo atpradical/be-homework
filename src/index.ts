@@ -1,6 +1,6 @@
 import express from 'express';
 import { setupApp } from './setup-app';
-import { runDB, setupDBIndexes } from './db/mongo.db';
+import { runDB } from './db/mongo.db';
 import { appConfig } from './core/config';
 
 const bootstrap = async () => {
@@ -12,7 +12,6 @@ const bootstrap = async () => {
   const PORT = appConfig.PORT;
 
   await runDB(appConfig.MONGO_URL, appConfig.DB_NAME);
-  await setupDBIndexes();
 
   app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}`);

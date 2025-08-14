@@ -1,6 +1,6 @@
 import { testSeeder } from './test.seeder';
 import { ResultStatus } from '../../src/core/result/resultCode';
-import { dropDb, runDB, stopDb } from '../../src/db/mongo.db';
+import { runDB, stopDb } from '../../src/db/mongo.db';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { container } from '../../src/composition-root';
 import { AuthService } from '../../src/features/auth/domain/auth.service';
@@ -16,27 +16,12 @@ describe('AUTH-INTEGRATION', () => {
     await runDB(url);
   }, 20000);
 
-  // beforeEach(async () => {
-  //   await request
-  //   if (client) {
-  //     await request(app).delete('/testing/all-data').expect(204);
-  //   }
-  // });
-
   afterAll(async () => {
-    await dropDb();
     await stopDb();
   });
 
   describe('User Registration', () => {
-    //nodemailerService.sendEmail = emailServiceMock.sendEmail;
     jest.spyOn(NodemailerService.prototype, 'sendEmail').mockResolvedValue(true);
-
-    // nodemailerService.sendEmail = jest
-    //   .fn()
-    //   .mockImplementation((email: string, code: string, template: (code: string) => string) =>
-    //     Promise.resolve(true),
-    //   );
 
     it('should register user with correct data', async () => {
       const { login, password, email } = testSeeder.createUserDto();

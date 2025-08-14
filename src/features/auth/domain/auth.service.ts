@@ -23,6 +23,7 @@ import {
   AuthDeviceSessionDocument,
   AuthDeviceSessionModel,
 } from '../../../db/models/auth-device-session.model';
+import { UserModel } from '../../../db/models/user.model';
 
 @injectable()
 export class AuthService {
@@ -130,9 +131,18 @@ export class AuthService {
 
     const passwordHash = await this.bcryptService.generateHash(password);
 
-    const user = new User(login, email, passwordHash);
+    const user = new UserModel();
 
-    // await this.usersRepository.create(user);
+    user.login = login;
+    user.email = email;
+    user.passwordHash = passwordHash;
+    user.emailConfirmation = {
+      confirmationCode: randomUUID(),
+      expirationDate: add(new Date(), { days: 1 }),
+      isConfirmed: false,
+    };
+
+    await this.usersRepository.save(user);
 
     this.nodemailerService
       .sendEmail(

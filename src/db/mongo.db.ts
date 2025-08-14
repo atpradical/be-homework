@@ -7,6 +7,7 @@ export const USERS_COLLECTION_NAME = 'users';
 export const COMMENTS_COLLECTION_NAME = 'comments';
 export const AUTH_DEVICE_SESSION_COLLECTION_NAME = 'auth_device_session';
 export const IP_RESTRICTION_COLLECTION_NAME = 'ip_restriction';
+export const LIKES_COLLECTION_NAME = 'likes';
 
 // Подключения к бд
 export async function runDB(url: string, name?: string): Promise<void> {

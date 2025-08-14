@@ -1,9 +1,9 @@
 import { RequestWithParams, RequestWithParamsAndBody } from '../../../core/types/requests';
-import { HttpStatus, IdType } from '../../../core';
+import { HttpStatus, IdType, UserDetails } from '../../../core';
 import { Response } from 'express';
 import { CommentView } from '../types';
 import { mapToCommentViewModel } from '../mappers/map-to-comment-view-model';
-import { CommentInputDto } from '../types/comment.input.dto';
+import { CommentInputDto, LikeInputDto } from '../types/comment.input.dto';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../core/result/resultCodeToHttpException';
 import { CommentsQueryRepository } from '../repositories/comments.query-repository';
@@ -18,10 +18,23 @@ export class CommentsController {
   ) {}
 
   async getCommentHandler(req: RequestWithParams<IdType>, res: Response<CommentView | null>) {
+    const userId = req.user?.id;
     const commentId = req.params.id;
 
-    const result = await this.commentsQueryRepository.findById(commentId);
+    if (userId) {
+      const result = await this.commentsService.findCommentWithUserStatus(commentId, userId);
 
+      if (!result) {
+        res.sendStatus(HttpStatus.NotFound);
+        return;
+      }
+
+      res.status(HttpStatus.Ok).send(result.data);
+      return;
+    }
+
+    // Пользователь не авторизован
+    const result = await this.commentsQueryRepository.findById(commentId);
     if (!result) {
       res.sendStatus(HttpStatus.NotFound);
       return;
@@ -29,6 +42,29 @@ export class CommentsController {
 
     const commentView = mapToCommentViewModel(result);
     res.status(HttpStatus.Ok).send(commentView);
+    return;
+  }
+
+  async updateCommentLikeStatusHandler(
+    req: RequestWithParamsAndBody<UserDetails, LikeInputDto>,
+    res: Response,
+  ) {
+    const userId = req.user.id;
+    const commentId = req.params.id;
+    const dto = req.body;
+
+    const result = await this.commentsService.updateCommentLikeStatus(
+      userId,
+      commentId,
+      dto.likeStatus,
+    );
+
+    if (result.status !== ResultStatus.Success) {
+      res.status(resultCodeToHttpException(result.status)).send(result.extensions);
+      return;
+    }
+
+    res.sendStatus(HttpStatus.NoContent);
     return;
   }
 

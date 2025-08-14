@@ -10,12 +10,14 @@ const commentSchema = new mongoose.Schema<Comment>(
       minLength: [1, 'PostId is required'],
       maxLength: [100, 'Too long PostId'],
     },
+
     content: {
       type: String,
       required: true,
       minLength: [1, 'content is required'],
       maxLength: [500, 'Too long content'],
     },
+
     commentatorInfo: {
       userId: {
         type: String,
@@ -23,6 +25,7 @@ const commentSchema = new mongoose.Schema<Comment>(
         minLength: [1, 'userId is required'],
         maxLength: [100, 'Too long userId'],
       },
+
       userLogin: {
         type: String,
         required: true,
@@ -30,6 +33,10 @@ const commentSchema = new mongoose.Schema<Comment>(
         maxLength: [100, 'Too long userLogin'],
       },
     },
+
+    likesCount: { type: Number, required: true },
+
+    dislikesCount: { type: Number, required: true },
   },
   { timestamps: true },
 );

@@ -203,6 +203,8 @@ export class PostsService {
       userId: userData._id.toString(),
       userLogin: userData.login,
     };
+    newComment.likesCount = 0;
+    newComment.dislikesCount = 0;
 
     const result = await this.commentsRepository.save(newComment);
 

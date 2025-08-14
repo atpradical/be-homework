@@ -9,7 +9,7 @@ export const ipRestrictionSchema = new mongoose.Schema<IpRestricted>(
       type: String,
       required: true,
       minLength: [1, 'IP is required'],
-      maxLength: [15, 'Too long IP'],
+      maxLength: [100, 'Too long IP'],
     },
     url: {
       type: String,
