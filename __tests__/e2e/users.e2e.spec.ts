@@ -17,7 +17,7 @@ describe('Users API test', () => {
   setupApp(app);
 
   beforeAll(async () => {
-    await runDB(appConfig.MONGO_URL);
+    await runDB(appConfig.MONGO_URL, appConfig.DB_NAME);
 
     // Clear the database before tests
     await request(app).delete('/testing/all-data').expect(204);
@@ -113,6 +113,7 @@ describe('Users API test', () => {
 
   it('shouldn`t delete user by id if specified user is not exists: STATUS 404', async () => {
     const nonExistentId = new ObjectId();
+
     await request(app)
       .delete('/users' + `/${nonExistentId}`)
       .auth(ADMIN_USERNAME, ADMIN_PASSWORD)

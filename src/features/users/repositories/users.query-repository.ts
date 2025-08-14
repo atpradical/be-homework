@@ -1,12 +1,10 @@
-import { ObjectId, WithId } from 'mongodb';
-import { usersCollection } from '../../../db/mongo.db';
-import { UserQueryInput } from '../types/user-query.input';
-import { User } from '../domain/user.entity';
 import { injectable } from 'inversify';
+import { UserQueryInput } from '../types/user-query.input';
+import { UserDocument, UserModel } from '../../../db/models/user.model';
 
 @injectable()
 export class UsersQueryRepository {
-  async findAll(queryDto: UserQueryInput): Promise<{ items: WithId<User>[]; totalCount: number }> {
+  async findAll(queryDto: UserQueryInput): Promise<{ items: UserDocument[]; totalCount: number }> {
     const { searchEmailTerm, searchLoginTerm, sortBy, sortDirection, pageNumber, pageSize } =
       queryDto;
 
@@ -14,48 +12,32 @@ export class UsersQueryRepository {
 
     const filter: any = {};
 
-    if (searchLoginTerm || searchEmailTerm) {
-      filter['$or'] = [];
-    }
-
     if (searchLoginTerm) {
-      filter['$or'].push({
-        login: { $regex: searchLoginTerm, $options: 'i' },
-      });
+      filter.login = { $regex: searchLoginTerm, $option: 'i' };
     }
 
     if (searchEmailTerm) {
-      filter['$or'].push({
-        email: { $regex: searchEmailTerm, $options: 'i' },
-      });
+      filter.login = { $regex: searchEmailTerm, $option: 'i' };
     }
 
-    const items = await usersCollection
-      .find(filter)
+    const usersQuery = UserModel.find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
-      .limit(pageSize)
-      .toArray();
+      .limit(pageSize);
 
-    const totalCount = await usersCollection.countDocuments(filter);
+    const totalCountQuery = UserModel.countDocuments(filter);
+
+    const [items, totalCount] = await Promise.all([usersQuery.exec(), totalCountQuery.exec()]);
 
     return { items, totalCount };
   }
 
-  async findUserById(id: string): Promise<WithId<User> | null> {
-    return await usersCollection.findOne({ _id: new ObjectId(id) });
+  async findUserById(id: string): Promise<UserDocument | null> {
+    return UserModel.findById(id);
   }
 
-  async findUserByEmail(email: string): Promise<WithId<User> | null> {
-    return await usersCollection.findOne({ email });
-  }
-
-  async findUserByLogin(login: string): Promise<WithId<User> | null> {
-    return await usersCollection.findOne({ login });
-  }
-
-  async findUserByLoginOrEmail(loginOrEmail: string): Promise<WithId<User> | null> {
-    return await usersCollection.findOne({
+  async findUserByLoginOrEmail(loginOrEmail: string): Promise<UserDocument | null> {
+    return UserModel.findOne({
       $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
     });
   }

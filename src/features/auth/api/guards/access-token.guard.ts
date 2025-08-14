@@ -29,3 +29,20 @@ export async function accessTokenGuard(req: Request, res: Response, next: NextFu
   res.sendStatus(HttpStatus.Unauthorized);
   return;
 }
+
+export async function accessTokenGuardOptional(req: Request, res: Response, next: NextFunction) {
+  if (req.headers.authorization) {
+    try {
+      const result = await authService.checkAccessToken(req.headers.authorization);
+      if (result.data.userId) {
+        // прокидываем userId в request для других middleWare
+        req.user = { id: result.data.userId } as IdType;
+      }
+    } catch (e: unknown) {
+      //
+    }
+  }
+
+  next();
+  return;
+}

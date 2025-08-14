@@ -85,31 +85,32 @@ export class BlogsController {
   }
 
   async updateBlogHandler(req: Request<{ id: string }, {}, BlogInputDto>, res: Response) {
-    try {
-      const id = req.params.id;
+    const result = await this.blogsService.update(req.params.id, req.body);
 
-      await this.blogsService.update(id, req.body);
-
-      res.sendStatus(HttpStatus.NoContent);
-    } catch (e: unknown) {
-      errorsHandler(e, res);
+    if (result.status !== ResultStatus.Success) {
+      res.status(resultCodeToHttpException(result.status)).send(result.extensions);
+      return;
     }
+
+    res.sendStatus(HttpStatus.NoContent);
+    return;
   }
 
   async deleteBlogHandler(req: Request<{ id: string }>, res: Response) {
-    try {
-      const id = req.params.id;
+    const id = req.params.id;
+    const result = await this.blogsService.delete(id);
 
-      await this.blogsService.delete(id);
-
-      res.sendStatus(HttpStatus.NoContent);
-    } catch (e: unknown) {
-      errorsHandler(e, res);
+    if (result.status !== ResultStatus.Success) {
+      res.status(resultCodeToHttpException(result.status)).send(result.extensions);
+      return;
     }
+
+    res.sendStatus(HttpStatus.NoContent);
+    return;
   }
 
   async getPostListByBlogIdHandler(
-    req: RequestWithParamsAndQuery<{ blogId: string }, PaginationAndSorting<PostSortField>>, // Request<{ blogId: string }, {}, {}, PaginationAndSorting<PostSortField>>,
+    req: RequestWithParamsAndQuery<{ blogId: string }, PaginationAndSorting<PostSortField>>,
     res: Response<PostListPaginatedOutput | ExtensionType[] | string>,
   ) {
     const blogId = req.params.blogId;

@@ -24,6 +24,10 @@ export function mapToCommentsListViewModel(
         userId: c.commentatorInfo.userId,
         userLogin: c.commentatorInfo.userLogin,
       },
+      likesInfo: {
+        likesCount: c.likesCount,
+        dislikesCount: c.dislikesCount,
+      },
     })),
   };
 }

@@ -1,8 +1,8 @@
-import { postsCollection } from '../../../db/mongo.db';
-import { ObjectId, WithId } from 'mongodb';
+import { WithId } from 'mongodb';
 import { PostQueryInput } from '../types/post-query.input';
 import { Post } from '../domain/post.etntity';
 import { injectable } from 'inversify';
+import { PostModel } from '../../../db/models/post.model';
 
 @injectable()
 export class PostsQueryRepository {
@@ -11,41 +11,19 @@ export class PostsQueryRepository {
 
     const skip = (pageNumber - 1) * pageSize;
 
-    const items = await postsCollection
-      .find()
+    const postsQuery = PostModel.find()
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
-      .limit(pageSize)
-      .toArray();
+      .limit(pageSize);
 
-    const totalCount = await postsCollection.countDocuments();
+    const countQuery = PostModel.countDocuments();
+
+    const [items, totalCount] = await Promise.all([postsQuery.lean(), countQuery.exec()]);
 
     return { items, totalCount };
   }
 
   async findById(id: string): Promise<WithId<Post> | null> {
-    return postsCollection.findOne({ _id: new ObjectId(id) });
-  }
-
-  async findPostsByBlog(
-    blogId: string,
-    queryDto: PostQueryInput,
-  ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
-    const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
-
-    const filter = { blogId: blogId };
-
-    const skip = (pageNumber - 1) * pageSize;
-
-    const items = await postsCollection
-      .find(filter)
-      .sort({ [sortBy]: sortDirection })
-      .skip(skip)
-      .limit(pageSize)
-      .toArray();
-
-    const totalCount = await postsCollection.countDocuments({ blogId: blogId });
-
-    return { items, totalCount };
+    return PostModel.findById(id);
   }
 }

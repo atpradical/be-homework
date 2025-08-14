@@ -2,47 +2,74 @@ import { UserQueryInput } from '../types/user-query.input';
 import { WithId } from 'mongodb';
 import { UsersRepository } from '../repositories/users.repository';
 import { UserInputDto } from '../types/user-input.dto';
-import { DomainError } from '../../../core/errors/domain.error';
 import { User } from './user.entity';
 import { BcryptService } from '../../auth/adapters/bcrypt.service';
 import { inject, injectable } from 'inversify';
-import { UsersQueryRepository } from '../repositories/users.query-repository';
+import { UserDocument, UserModel } from '../../../db/models/user.model';
+import { ObjectResult } from '../../../core/result/object-result.entity';
+import { ResultStatus } from '../../../core/result/resultCode';
+import { randomUUID } from 'node:crypto';
+import { add } from 'date-fns/add';
 
 @injectable()
 export class UsersService {
   constructor(
     @inject(UsersRepository) private usersRepository: UsersRepository,
     @inject(BcryptService) private bcrypt: BcryptService,
-    @inject(UsersQueryRepository) private usersQueryRepository: UsersQueryRepository,
   ) {}
 
   async findAll(queryDto: UserQueryInput): Promise<{ items: WithId<User>[]; totalCount: number }> {
-    return this.usersQueryRepository.findAll(queryDto);
+    return this.usersRepository.findAll(queryDto);
   }
 
-  async create(dto: UserInputDto): Promise<WithId<User> | null> {
-    const existUserWithSameEmail = await this.usersQueryRepository.findUserByEmail(dto.email);
+  async create(dto: UserInputDto): Promise<ObjectResult<UserDocument>> {
+    const userWithSameEmail = await this.usersRepository.findUserByLoginOrEmail(dto.email);
 
-    if (existUserWithSameEmail) {
-      throw new DomainError('email should be unique', 'email');
+    if (userWithSameEmail) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.BadRequest,
+        errorMessage: 'BadRequest',
+        extensions: 'User with same Email already exist',
+      });
     }
 
-    const existUserWithSameLogin = await this.usersQueryRepository.findUserByLogin(dto.login);
+    const userWithSameLogin = await this.usersRepository.findUserByLoginOrEmail(dto.login);
 
-    if (existUserWithSameLogin) {
-      throw new DomainError('login should be unique', 'login');
+    if (userWithSameLogin) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.BadRequest,
+        errorMessage: 'BadRequest',
+        extensions: 'User with same Login already exist',
+      });
     }
 
     const passwordHash = await this.bcrypt.generateHash(dto.password, 10);
 
-    const newUser: User = User.createSuperUser(dto.login, dto.email, passwordHash);
+    // Создаем SA до mongoose было: User.createSuperUser(dto.login, dto.email, passwordHash);
+    const newUser = new UserModel();
 
-    const insertedUserId = await this.usersRepository.create(newUser);
+    newUser.login = dto.login;
+    newUser.email = dto.email;
+    newUser.passwordHash = passwordHash;
+    newUser.emailConfirmation.isConfirmed = true;
+    newUser.emailConfirmation.confirmationCode = randomUUID();
+    newUser.emailConfirmation.expirationDate = add(new Date(), { minutes: 30 });
 
-    return this.usersRepository.findUserById(insertedUserId);
+    const result = await this.usersRepository.save(newUser);
+
+    return ObjectResult.createSuccessResult(result);
   }
 
-  async delete(id: string): Promise<void> {
-    return this.usersRepository.delete(id);
+  async delete(id: string): Promise<ObjectResult> {
+    const result = await this.usersRepository.deleteById(id);
+
+    if (!result) {
+      return ObjectResult.createErrorResult({
+        status: ResultStatus.NotFound,
+        errorMessage: 'NotFound',
+        extensions: `User with id: ${id} not found`,
+      });
+    }
+    return ObjectResult.createSuccessResult(null);
   }
 }

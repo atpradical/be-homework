@@ -1,32 +1,30 @@
-import { ObjectId, WithId } from 'mongodb';
-import { commentsCollection } from '../../../db/mongo.db';
 import { CommentQueryInput } from '../types/comment-query.input';
-import { Comment } from '../domain/comment.entity';
 import { injectable } from 'inversify';
+import { CommentDocument, CommentModel } from '../../../db/models/comments.model';
 
 @injectable()
 export class CommentsQueryRepository {
   async findAll(
     postId: string,
     queryDto: CommentQueryInput,
-  ): Promise<{ items: WithId<Comment>[]; totalCount: number }> {
+  ): Promise<{ items: CommentDocument[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
 
     const skip = (pageNumber - 1) * pageSize;
 
-    const items = await commentsCollection
-      .find({ postId })
+    const commentsQuery = CommentModel.find({ postId })
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
-      .limit(pageSize)
-      .toArray();
+      .limit(pageSize);
 
-    const totalCount = await commentsCollection.countDocuments({ postId });
+    const countQuery = CommentModel.countDocuments({ postId });
+
+    const [items, totalCount] = await Promise.all([commentsQuery.exec(), countQuery.exec()]);
 
     return { items, totalCount };
   }
 
-  async findById(id: string): Promise<WithId<Comment> | null> {
-    return await commentsCollection.findOne({ _id: new ObjectId(id) });
+  async findById(id: string): Promise<CommentDocument | null> {
+    return CommentModel.findById(id);
   }
 }

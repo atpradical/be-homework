@@ -17,7 +17,7 @@ describe('Comments API test', () => {
   setupApp(app);
 
   beforeAll(async () => {
-    await runDB(appConfig.MONGO_URL);
+    await runDB(appConfig.MONGO_URL, appConfig.DB_NAME);
 
     // Clear the database before tests
     await request(app).delete('/testing/all-data').expect(204);
@@ -79,6 +79,11 @@ describe('Comments API test', () => {
         userLogin: testLogin,
       },
       createdAt: expect.any(String),
+      likesInfo: {
+        likesCount: expect.any(Number),
+        dislikesCount: expect.any(Number),
+        myStatus: 'None',
+      },
     });
   });
 

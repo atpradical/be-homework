@@ -16,6 +16,8 @@ export class Comment {
     userLogin: string;
   };
   createdAt: Date;
+  likesCount: number;
+  dislikesCount: number;
 
   constructor(props: Props) {
     const { postId, content, commentatorInfo, createdAt } = props;
@@ -23,6 +25,8 @@ export class Comment {
     this.content = content;
     this.commentatorInfo = commentatorInfo;
     this.createdAt = createdAt;
+    this.likesCount = 0;
+    this.dislikesCount = 0;
   }
 
   static create(props) {

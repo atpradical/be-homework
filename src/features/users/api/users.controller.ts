@@ -8,10 +8,18 @@ import { UserInputDto } from '../types/user-input.dto';
 import { mapToUserViewModel } from '../mappers/map-to-user-view-model';
 import { UsersService } from '../domain/users.service';
 import { inject, injectable } from 'inversify';
+import { ResultStatus } from '../../../core/result/resultCode';
+import { resultCodeToHttpException } from '../../../core/result/resultCodeToHttpException';
+import { UsersQueryRepository } from '../repositories/users.query-repository';
+
+// todo: мапить в QueryRepo
 
 @injectable()
 export class UsersController {
-  constructor(@inject(UsersService) private usersService: UsersService) {}
+  constructor(
+    @inject(UsersService) private usersService: UsersService,
+    @inject(UsersQueryRepository) private usersQueryRepository: UsersQueryRepository,
+  ) {}
 
   async getUsersListHandler(req: Request, res: Response) {
     try {
@@ -19,7 +27,7 @@ export class UsersController {
 
       const queryInput = setDefaultSortAndPaginationIfNotExist(query);
 
-      const { items, totalCount } = await this.usersService.findAll(queryInput);
+      const { items, totalCount } = await this.usersQueryRepository.findAll(queryInput);
 
       const userListOutput = mapToUserListPaginatedOutput(items, {
         pageNumber: queryInput.pageNumber,
@@ -34,27 +42,27 @@ export class UsersController {
   }
 
   async createUserHandler(req: Request<{}, {}, UserInputDto>, res: Response) {
-    try {
-      const createdUser = await this.usersService.create(req.body);
+    const result = await this.usersService.create(req.body);
 
-      if (createdUser) {
-        const userViewModel = mapToUserViewModel(createdUser);
-        res.status(HttpStatus.Created).send(userViewModel);
-      }
-    } catch (e) {
-      errorsHandler(e, res);
+    if (result.status !== ResultStatus.Success) {
+      res.status(resultCodeToHttpException(result.status)).send(result.extensions);
+      return;
     }
+
+    const userViewModel = mapToUserViewModel(result.data);
+    res.status(HttpStatus.Created).send(userViewModel);
+    return;
   }
 
   async deleteUserHandler(req: Request<{ id: string }>, res: Response) {
-    try {
-      const id = req.params.id;
+    const result = await this.usersService.delete(req.params.id);
 
-      await this.usersService.delete(id);
-
-      res.sendStatus(HttpStatus.NoContent);
-    } catch (e: unknown) {
-      errorsHandler(e, res);
+    if (result.status !== ResultStatus.Success) {
+      res.status(resultCodeToHttpException(result.status)).send(result.extensions);
+      return;
     }
+
+    res.sendStatus(HttpStatus.NoContent);
+    return;
   }
 }

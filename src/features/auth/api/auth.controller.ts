@@ -142,7 +142,7 @@ export class AuthController {
     res
       .status(HttpStatus.Ok)
       .cookie('refreshToken', result.data.refreshToken, {
-        path: '/auth',
+        path: '/',
         httpOnly: true,
         secure: true,
         sameSite: 'lax',
