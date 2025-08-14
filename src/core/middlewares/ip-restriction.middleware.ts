@@ -5,9 +5,9 @@ import { resultCodeToHttpException } from '../result/resultCodeToHttpException';
 import { container } from '../../composition-root';
 import { IpRestrictionService } from '../../features/ip-restriction/domain/ip-restriction.service';
 
-const ipRestrictionService = container.get<IpRestrictionService>(IpRestrictionService);
-
 export async function ipRestrictionMiddleware(req: Request, res: Response, next: NextFunction) {
+  const ipRestrictionService = container.get<IpRestrictionService>(IpRestrictionService);
+
   const url = req.originalUrl;
   const ip = req.ip;
 

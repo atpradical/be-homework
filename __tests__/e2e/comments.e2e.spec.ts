@@ -79,6 +79,11 @@ describe('Comments API test', () => {
         userLogin: testLogin,
       },
       createdAt: expect.any(String),
+      likesInfo: {
+        likesCount: expect.any(Number),
+        dislikesCount: expect.any(Number),
+        myStatus: 'None',
+      },
     });
   });
 
