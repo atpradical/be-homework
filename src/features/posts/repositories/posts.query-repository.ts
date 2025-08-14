@@ -2,11 +2,11 @@ import { WithId } from 'mongodb';
 import { PostQueryInput } from '../types/post-query.input';
 import { Post } from '../domain/post.etntity';
 import { injectable } from 'inversify';
-import { PostModel } from '../../../db/models/post.model';
+import { PostDocument, PostModel } from '../../../db/models/post.model';
 
 @injectable()
 export class PostsQueryRepository {
-  async findAll(queryDto: PostQueryInput): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+  async findAll(queryDto: PostQueryInput): Promise<{ items: PostDocument[]; totalCount: number }> {
     const { pageSize, pageNumber, sortBy, sortDirection } = queryDto;
 
     const skip = (pageNumber - 1) * pageSize;
@@ -18,7 +18,7 @@ export class PostsQueryRepository {
 
     const countQuery = PostModel.countDocuments();
 
-    const [items, totalCount] = await Promise.all([postsQuery.lean(), countQuery.exec()]);
+    const [items, totalCount] = await Promise.all([postsQuery.exec(), countQuery.exec()]);
 
     return { items, totalCount };
   }

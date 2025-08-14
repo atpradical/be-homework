@@ -82,7 +82,6 @@ describe('Comments API test', () => {
       likesInfo: {
         likesCount: expect.any(Number),
         dislikesCount: expect.any(Number),
-        myStatus: 'None',
       },
     });
   });

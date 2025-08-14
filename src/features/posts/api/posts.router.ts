@@ -9,7 +9,10 @@ import { postsInputValidation } from './middleware/posts.input-dto.validation';
 import { superAdminGuard } from '../../auth/api/guards/super-admin.guard';
 import { PostSortField } from '../types/post-sort-field';
 import { CommentSortField } from '../../comments/types/comment-sort-field';
-import { accessTokenGuard } from '../../auth/api/guards/access-token.guard';
+import {
+  accessTokenGuard,
+  accessTokenGuardOptional,
+} from '../../auth/api/guards/access-token.guard';
 import { commentsInputValidation } from '../../comments/api/middleware/comments.input-dto.validation';
 import { PostsController } from './posts.controller';
 import { container } from '../../../composition-root';
@@ -43,6 +46,7 @@ postsRouter
 
   .get(
     '/:postId/comments',
+    accessTokenGuardOptional,
     postIdValidation,
     paginationAndSortingValidation(CommentSortField),
     inputValidationResultMiddleware,

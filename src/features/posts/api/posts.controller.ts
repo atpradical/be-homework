@@ -28,6 +28,7 @@ import { PostsQueryRepository } from '../repositories/posts.query-repository';
 import { PostsService } from '../domain/posts.service';
 import { CommentsQueryRepository } from '../../comments/repositories/comments.query-repository';
 import { inject, injectable } from 'inversify';
+import { LikesQueryRepository } from '../../likes/repositories/likes.query-repository';
 
 @injectable()
 export class PostsController {
@@ -35,6 +36,7 @@ export class PostsController {
     @inject(PostsService) private postsService: PostsService,
     @inject(PostsQueryRepository) private postsQueryRepository: PostsQueryRepository,
     @inject(CommentsQueryRepository) private commentsQueryRepository: CommentsQueryRepository,
+    @inject(LikesQueryRepository) private likesQueryRepository: LikesQueryRepository,
   ) {}
 
   async getPostListHandler(req: Request, res: Response) {
@@ -119,11 +121,14 @@ export class PostsController {
     return;
   }
 
+  // todo: выносить логику в QueryService ? или перенести в QueryRepo ?
   async getCommentsListHandler(
     req: RequestWithParamsAndQuery<PostIdType, CommentQueryInput>,
     res: Response<CommentListPaginatedOutput | string>,
   ) {
+    const userId = req.user?.id;
     const postId = req.params.postId;
+    let likes = [];
 
     const post = await this.postsQueryRepository.findById(postId);
 
@@ -136,10 +141,20 @@ export class PostsController {
 
     const { items, totalCount } = await this.commentsQueryRepository.findAll(postId, queryInput);
 
-    const resultViewModel = mapToCommentsListViewModel(items, {
-      pageNumber: queryInput.pageNumber,
-      pageSize: queryInput.pageSize,
-      totalCount,
+    if (userId) {
+      const commentIds = items.map((item) => item.id);
+      likes = await this.likesQueryRepository.findAllByCommentAndUserId(userId, commentIds);
+    }
+
+    const resultViewModel = mapToCommentsListViewModel({
+      comments: items,
+      userId,
+      likes,
+      pagination: {
+        pageNumber: queryInput.pageNumber,
+        pageSize: queryInput.pageSize,
+        totalCount,
+      },
     });
 
     res.status(HttpStatus.Ok).send(resultViewModel);
