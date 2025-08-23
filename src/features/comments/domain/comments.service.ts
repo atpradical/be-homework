@@ -90,7 +90,7 @@ export class CommentsService {
           break;
         case LikeStatus.Dislike:
           newLike.updateLikeStatus(LikeStatus.Dislike);
-          comment.updateLikesCounter(LikeStatus.Dislike, IncrementType.Decrement);
+          comment.updateLikesCounter(LikeStatus.Dislike, IncrementType.Increment);
           break;
         case LikeStatus.None:
           newLike.likeStatus = LikeStatus.None;
@@ -113,6 +113,7 @@ export class CommentsService {
         case LikeStatus.Dislike:
           if (like.likeStatus !== LikeStatus.Dislike) {
             like.updateLikeStatus(LikeStatus.Dislike);
+            comment.updateLikesCounter(LikeStatus.Dislike, IncrementType.Increment);
             comment.likesCount > 0 &&
               comment.updateLikesCounter(LikeStatus.Like, IncrementType.Decrement);
           }

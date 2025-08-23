@@ -49,6 +49,9 @@ const likeStatics = {
   },
 };
 
+likesSchema.methods = likeMethods;
+likesSchema.statics = likeStatics;
+
 type LikeMethods = typeof likeMethods;
 type LikeStatics = typeof likeStatics;
 

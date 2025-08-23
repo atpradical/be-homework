@@ -6,6 +6,7 @@ import { UserModel } from '../../../db/models/user.model';
 import { CommentModel } from '../../../db/models/comments.model';
 import { AuthDeviceSessionModel } from '../../../db/models/auth-device-session.model';
 import { IpRestrictionModel } from '../../../db/models/ip-restriction.model';
+import { LikeModel } from '../../../db/models/likes.model';
 
 export const testingRouter = Router({});
 
@@ -15,6 +16,7 @@ testingRouter.delete('/all-data', async (reg: Request, res: Response) => {
     await PostModel.deleteMany({});
     await UserModel.deleteMany({});
     await CommentModel.deleteMany({});
+    await LikeModel.deleteMany({});
     await AuthDeviceSessionModel.deleteMany({});
     await IpRestrictionModel.deleteMany({});
     res.status(HttpStatus.NoContent).send('All data is deleted');

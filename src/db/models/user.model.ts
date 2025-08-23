@@ -9,20 +9,20 @@ export const userSchema = new mongoose.Schema<User, UserModel, UserMethods>(
     login: {
       type: String,
       required: true,
-      minLength: [1, 'Login is required'],
-      maxLength: [100, 'Too long Login'],
+      minlength: [1, 'Login is required'],
+      maxlength: [100, 'Too long Login'],
     },
     email: {
       type: String,
       required: true,
-      minLength: [5, 'Email is required'],
-      maxLength: [100, 'Too long Email'],
+      minlength: [5, 'Email is required'],
+      maxlength: [100, 'Too long Email'],
     },
     passwordHash: {
       type: String,
       required: true,
-      minLength: [1, 'PasswordHash is required'],
-      maxLength: [250, 'Too long PasswordHash'],
+      minlength: [1, 'PasswordHash is required'],
+      maxlength: [250, 'Too long PasswordHash'],
     },
 
     emailConfirmation: {
@@ -70,20 +70,17 @@ const userMethods = {
 
   /* Проверяет возмозжность подтверждения пользователя */
   canBeConfirmed(code: string) {
-    if (
-      // Если коррректный код
-      code === (this as UserDocument).emailConfirmation.confirmationCode &&
-      // Если еще не был подтвержден
-      !(this as UserDocument).emailConfirmation.isConfirmed &&
-      // Если код еще не протух
-      (this as UserDocument).emailConfirmation.expirationDate < new Date()
-    ) {
+    if (code !== (this as UserDocument).emailConfirmation.confirmationCode) {
+      return false;
+    } else if ((this as UserDocument).emailConfirmation.isConfirmed) {
+      return false;
+    } else if ((this as UserDocument).emailConfirmation.expirationDate < new Date()) {
+      return false;
+    } else {
       (this as UserDocument).emailConfirmation.isConfirmed = true;
       (this as UserDocument).markModified('emailConfirmation');
       return true;
     }
-
-    return false;
   },
 };
 
