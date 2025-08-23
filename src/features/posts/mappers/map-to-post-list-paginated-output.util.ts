@@ -1,6 +1,6 @@
 import { WithId } from 'mongodb';
 import { PostListPaginatedOutput } from '../types/post-list-paginated.output';
-import { Post } from '../domain/post.etntity';
+import { Post } from '../../../db/models/post.model';
 
 export function mapToPostListPaginatedOutput(
   posts: WithId<Post>[],
@@ -20,6 +20,10 @@ export function mapToPostListPaginatedOutput(
       content: post.content,
       shortDescription: post.shortDescription,
       title: post.title,
+      //todo: обновить view model
+      likesCount: 0,
+      dislikesCount: 0,
+      newestLikes: [],
     })),
   };
 }

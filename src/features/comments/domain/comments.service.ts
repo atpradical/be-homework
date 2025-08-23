@@ -5,7 +5,7 @@ import { CommentsRepository } from '../repositories/comments.repository';
 import { inject, injectable } from 'inversify';
 import { LikesService } from '../../likes/domain/likes.service';
 import { LikeModel } from '../../../db/models/likes.model';
-import { LikeStatus } from '../../../core';
+import { IncrementType, LikeStatus } from '../../../core';
 import { CommentView } from '../types';
 import { mapToCommentViewModel } from '../mappers/map-to-comment-view-model';
 
@@ -78,19 +78,19 @@ export class CommentsService {
 
     if (!like) {
       // Если like нет -> создаем новые
-      const newLike = new LikeModel();
-
-      newLike.userId = userId;
-      newLike.commentId = commentId;
+      const newLike = LikeModel.createLike({
+        userId,
+        entityId: commentId,
+      });
 
       switch (likeStatus) {
         case LikeStatus.Like:
-          newLike.likeStatus = LikeStatus.Like;
-          comment.likesCount++;
+          newLike.updateLikeStatus(LikeStatus.Like);
+          comment.updateLikesCounter(LikeStatus.Like, IncrementType.Increment);
           break;
         case LikeStatus.Dislike:
-          newLike.likeStatus = LikeStatus.Dislike;
-          comment.dislikesCount++;
+          newLike.updateLikeStatus(LikeStatus.Dislike);
+          comment.updateLikesCounter(LikeStatus.Dislike, IncrementType.Decrement);
           break;
         case LikeStatus.None:
           newLike.likeStatus = LikeStatus.None;
@@ -104,25 +104,26 @@ export class CommentsService {
       switch (likeStatus) {
         case LikeStatus.Like:
           if (like.likeStatus !== LikeStatus.Like) {
-            like.likeStatus = LikeStatus.Like;
-            comment.likesCount++;
-            comment.dislikesCount = comment.dislikesCount > 0 ? comment.dislikesCount - 1 : 0;
+            like.updateLikeStatus(LikeStatus.Like);
+            comment.updateLikesCounter(LikeStatus.Like, IncrementType.Increment);
+            comment.dislikesCount > 0 &&
+              comment.updateLikesCounter(LikeStatus.Dislike, IncrementType.Decrement);
           }
           break;
         case LikeStatus.Dislike:
           if (like.likeStatus !== LikeStatus.Dislike) {
-            like.likeStatus = LikeStatus.Dislike;
-            comment.likesCount = comment.likesCount > 0 ? comment.likesCount - 1 : 0;
-            comment.dislikesCount++;
+            like.updateLikeStatus(LikeStatus.Dislike);
+            comment.likesCount > 0 &&
+              comment.updateLikesCounter(LikeStatus.Like, IncrementType.Decrement);
           }
           break;
         case LikeStatus.None:
           if (like.likeStatus === LikeStatus.Dislike) {
-            comment.dislikesCount--;
+            comment.updateLikesCounter(LikeStatus.Dislike, IncrementType.Decrement);
           }
 
           if (like.likeStatus === LikeStatus.Like) {
-            comment.likesCount--;
+            comment.updateLikesCounter(LikeStatus.Like, IncrementType.Decrement);
           }
 
           like.likeStatus = LikeStatus.None;

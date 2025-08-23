@@ -1,5 +1,5 @@
 import { PaginatedOutput } from '../../../core/types/paginated.output';
-import { Post } from '../domain/post.etntity';
+import { Post } from '../../../db/models/post.model';
 
 export type PostListPaginatedOutput = {
   items: Post[];

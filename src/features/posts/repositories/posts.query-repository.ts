@@ -1,8 +1,7 @@
 import { WithId } from 'mongodb';
 import { PostQueryInput } from '../types/post-query.input';
-import { Post } from '../domain/post.etntity';
 import { injectable } from 'inversify';
-import { PostDocument, PostModel } from '../../../db/models/post.model';
+import { Post, PostDocument, PostModel } from '../../../db/models/post.model';
 
 @injectable()
 export class PostsQueryRepository {

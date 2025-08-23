@@ -8,13 +8,11 @@ import { ObjectResult } from '../../../core/result/object-result.entity';
 import { BlogsService } from '../../blogs/domain/blogs.service';
 import { BlogsQueryRepository } from '../../blogs/repositories/blogs.query-repository';
 import { CommentsRepository } from '../../comments/repositories/comments.repository';
-import { Post } from './post.etntity';
-import { Comment } from '../../comments/domain/comment.entity';
 import { inject, injectable } from 'inversify';
-import { PostDocument, PostModel } from '../../../db/models/post.model';
+import { Post, PostDocument, PostModel } from '../../../db/models/post.model';
 import { BlogsRepository } from '../../blogs/repositories/blogs.repository';
 import { UsersRepository } from '../../users/repositories/users.repository';
-import { CommentModel } from '../../../db/models/comments.model';
+import { Comment, CommentModel } from '../../../db/models/comments.model';
 
 @injectable()
 export class PostsService {
@@ -46,13 +44,13 @@ export class PostsService {
       });
     }
 
-    const newPost = new PostModel();
-
-    newPost.title = dto.title;
-    newPost.shortDescription = dto.shortDescription;
-    newPost.content = dto.content;
-    newPost.blogId = dto.blogId;
-    newPost.blogName = blog?.name;
+    const newPost = PostModel.createPost({
+      title: dto.title,
+      shortDescription: dto.shortDescription,
+      content: dto.content,
+      blogId: dto.blogId,
+      blogName: blog.name,
+    });
 
     const result = await this.postsRepository.save(newPost);
 
@@ -78,10 +76,7 @@ export class PostsService {
       });
     }
 
-    post.title = dto.title;
-    post.shortDescription = dto.shortDescription;
-    post.content = dto.content;
-    post.blogId = dto.blogId;
+    post.updatePost(dto);
 
     const result = await this.postsRepository.save(post);
 
@@ -149,13 +144,13 @@ export class PostsService {
       });
     }
 
-    const newPost = new PostModel();
-
-    newPost.title = dto.title;
-    newPost.shortDescription = dto.shortDescription;
-    newPost.content = dto.content;
-    newPost.blogId = blogId;
-    newPost.blogName = blog.name;
+    const newPost = PostModel.createPost({
+      title: dto.title,
+      shortDescription: dto.shortDescription,
+      content: dto.content,
+      blogId: blogId,
+      blogName: blog.name,
+    });
 
     const result = await this.postsRepository.save(newPost);
 
@@ -195,16 +190,14 @@ export class PostsService {
       });
     }
 
-    const newComment = new CommentModel();
-
-    newComment.postId = postData._id.toString();
-    newComment.content = dto.content;
-    newComment.commentatorInfo = {
-      userId: userData._id.toString(),
-      userLogin: userData.login,
-    };
-    newComment.likesCount = 0;
-    newComment.dislikesCount = 0;
+    const newComment = CommentModel.createComment({
+      postId: postData._id.toString(),
+      content: dto.content,
+      commentatorInfo: {
+        userId: userData._id.toString(),
+        userLogin: userData.login,
+      },
+    });
 
     const result = await this.commentsRepository.save(newComment);
 

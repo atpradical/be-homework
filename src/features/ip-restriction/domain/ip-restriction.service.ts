@@ -12,10 +12,10 @@ export class IpRestrictionService {
   ) {}
 
   async create(ip: string, url: string) {
-    const newRecord = new IpRestrictionModel();
-
-    newRecord.ip = ip;
-    newRecord.url = url;
+    const newRecord = IpRestrictionModel.createNewRecord({
+      ip: ip,
+      url: url,
+    });
 
     const result = await this.ipRestrictionRepository.save(newRecord);
 

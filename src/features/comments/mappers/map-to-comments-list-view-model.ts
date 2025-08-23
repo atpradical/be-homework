@@ -1,8 +1,8 @@
 import { WithId } from 'mongodb';
 import { CommentListPaginatedOutput } from '../types/comment-list-paginated.output';
-import { Comment } from '../domain/comment.entity';
 import { LikeDocument } from '../../../db/models/likes.model';
 import { LikeStatus } from '../../../core';
+import { Comment } from '../../../db/models/comments.model';
 
 type Params = {
   comments: WithId<Comment>[];
@@ -22,7 +22,7 @@ export function mapToCommentsListViewModel(prams: Params): CommentListPaginatedO
   const likesByComment = new Map<string, LikeStatus>();
   if (userId && likes?.length) {
     for (const l of likes) {
-      likesByComment.set(l.commentId.toString(), l.likeStatus);
+      likesByComment.set(l.entityId.toString(), l.likeStatus);
     }
   }
 

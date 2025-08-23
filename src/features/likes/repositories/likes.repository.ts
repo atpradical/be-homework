@@ -7,12 +7,12 @@ export class LikesRepository {
     return newLike.save();
   }
 
-  async findByCommentAndUserId(userId: string, commentId: string): Promise<LikeDocument | null> {
-    return LikeModel.findOne({ userId, commentId });
+  async findByCommentAndUserId(userId: string, entityId: string): Promise<LikeDocument | null> {
+    return LikeModel.findOne({ userId, entityId });
   }
 
-  async delete(userId: string, commentId: string): Promise<boolean> {
-    const result = await LikeModel.deleteOne({ userId, commentId });
+  async delete(userId: string, entityId: string): Promise<boolean> {
+    const result = await LikeModel.deleteOne({ userId, entityId });
     return result.deletedCount === 1;
   }
 }

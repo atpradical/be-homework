@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../core/helpers/set-default-sort-and-pagination';
 import { PostQueryInput } from '../types/post-query.input';
 import { mapToPostListPaginatedOutput } from '../mappers/map-to-post-list-paginated-output.util';
-import { HttpStatus, IdType, PostIdType } from '../../../core';
+import { HttpStatus, IdType, PostIdType, UserDetails } from '../../../core';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import {
   RequestWithBody,
@@ -21,7 +21,7 @@ import { ResponseWithExtensions } from '../../../core/types/responses';
 import { CommentQueryInput } from '../../comments/types/comment-query.input';
 import { CommentListPaginatedOutput } from '../../comments/types/comment-list-paginated.output';
 import { mapToCommentsListViewModel } from '../../comments/mappers/map-to-comments-list-view-model';
-import { CommentInputDto } from '../../comments/types/comment.input.dto';
+import { CommentInputDto, LikeInputDto } from '../../comments/types/comment.input.dto';
 import { CommentView } from '../../comments/types';
 import { mapToCommentViewModel } from '../../comments/mappers/map-to-comment-view-model';
 import { PostsQueryRepository } from '../repositories/posts.query-repository';
@@ -119,6 +119,16 @@ export class PostsController {
 
     res.sendStatus(HttpStatus.NoContent);
     return;
+  }
+
+  async updatePostLikeStatusHandler(
+    req: RequestWithParamsAndBody<UserDetails, LikeInputDto>,
+    res: Response,
+  ) {
+    const userId = req.user.id;
+    const postId = req.params.id;
+
+    // post Service updatePostLikeStatus
   }
 
   // todo: выносить логику в QueryService ? или перенести в QueryRepo ?

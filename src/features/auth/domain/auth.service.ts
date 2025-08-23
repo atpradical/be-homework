@@ -4,7 +4,6 @@ import { JwtService, RefreshTokenPayload } from '../adapters/jwt.service';
 import { BcryptService } from '../adapters/bcrypt.service';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { RegistrationUserInputDto } from '../types/registration-user-input.dto';
-import { User } from '../../users/domain/user.entity';
 import { NodemailerService } from '../adapters/nodemailer.service';
 import { EmailExamples } from '../adapters/emailExamples';
 import { ObjectResult } from '../../../core/result/object-result.entity';
@@ -23,7 +22,7 @@ import {
   AuthDeviceSessionDocument,
   AuthDeviceSessionModel,
 } from '../../../db/models/auth-device-session.model';
-import { UserModel } from '../../../db/models/user.model';
+import { User, UserModel } from '../../../db/models/user.model';
 
 @injectable()
 export class AuthService {
@@ -107,9 +106,7 @@ export class AuthService {
   async registerUser(dto: RegistrationUserInputDto): Promise<Nullable<ObjectResult<User>>> {
     const { login, email, password } = dto;
 
-    let existUser;
-
-    existUser = await this.usersRepository.findUserByLoginOrEmail(login);
+    let existUser = await this.usersRepository.findUserByLoginOrEmail(login);
 
     if (existUser) {
       return ObjectResult.createErrorResult({
@@ -131,16 +128,11 @@ export class AuthService {
 
     const passwordHash = await this.bcryptService.generateHash(password);
 
-    const user = new UserModel();
-
-    user.login = login;
-    user.email = email;
-    user.passwordHash = passwordHash;
-    user.emailConfirmation = {
-      confirmationCode: randomUUID(),
-      expirationDate: add(new Date(), { days: 1 }),
-      isConfirmed: false,
-    };
+    const user = UserModel.createUser({
+      login,
+      email,
+      passwordHash,
+    });
 
     await this.usersRepository.save(user);
 
@@ -182,13 +174,7 @@ export class AuthService {
     }
 
     // Генерация нового кода и даты истечения
-    const updatedEmailConfirmation = {
-      confirmationCode: randomUUID(),
-      expirationDate: add(new Date(), { days: 1 }),
-      isConfirmed: false,
-    };
-
-    user.emailConfirmation = updatedEmailConfirmation;
+    user.generateNewConfirmationCode();
 
     const updateResult = await this.usersRepository.save(user);
 
@@ -203,7 +189,7 @@ export class AuthService {
     this.nodemailerService
       .sendEmail(
         user.email,
-        updatedEmailConfirmation.confirmationCode,
+        user.emailConfirmation.confirmationCode,
         this.emailExamples.registrationEmail,
       )
       .catch((e: unknown) => {
@@ -218,7 +204,9 @@ export class AuthService {
   ): Promise<Promise<Nullable<ObjectResult>>> {
     const user = await this.usersRepository.findUserByConfirmationCode(dto.code);
 
-    if (!user) {
+    const checkResult = user.canBeConfirmed(dto.code);
+
+    if (!checkResult) {
       return ObjectResult.createErrorResult({
         status: ResultStatus.BadRequest,
         errorMessage: 'Bad Request',
@@ -226,27 +214,7 @@ export class AuthService {
       });
     }
 
-    if (user.emailConfirmation.isConfirmed) {
-      return ObjectResult.createErrorResult({
-        status: ResultStatus.BadRequest,
-        errorMessage: 'Bad Request',
-        extensions: [{ field: 'code', message: 'Already confirmed' }],
-      });
-    }
-
-    if (user.emailConfirmation.expirationDate < new Date()) {
-      return ObjectResult.createErrorResult({
-        status: ResultStatus.BadRequest,
-        errorMessage: 'Bad Request',
-        extensions: [{ message: 'Code is expired', field: 'code' }],
-      });
-    }
-
-    user.emailConfirmation = {
-      isConfirmed: true,
-      confirmationCode: user.emailConfirmation.confirmationCode,
-      expirationDate: user.emailConfirmation.expirationDate,
-    };
+    user.confirmUser(dto.code);
 
     const updateResult = await this.usersRepository.save(user);
 
@@ -377,14 +345,14 @@ export class AuthService {
     const refreshToken = await this.jwtService.createRefreshToken(userId, deviceId);
     const decodedRefreshToken = await this.jwtService.decodeToken(refreshToken);
 
-    const newDevice = new AuthDeviceSessionModel();
-
-    newDevice.userId = userId;
-    newDevice.deviceId = deviceId;
-    newDevice.deviceName = deviceName ?? UNKNOWN_DEVICE;
-    newDevice.ip = ip ?? UNKNOWN_IP;
-    newDevice.issuedAt = new Date(decodedRefreshToken.iat * 1000);
-    newDevice.expiresAt = new Date(decodedRefreshToken.exp * 1000);
+    const newDevice = AuthDeviceSessionModel.createDevice({
+      userId: userId,
+      deviceId: deviceId,
+      deviceName: deviceName ?? UNKNOWN_DEVICE,
+      ip: ip ?? UNKNOWN_IP,
+      issuedAt: decodedRefreshToken.iat,
+      expiresAt: decodedRefreshToken.exp,
+    });
 
     const sessionCreateResult = await this.authDeviceSessionService.save(newDevice);
 
@@ -411,8 +379,10 @@ export class AuthService {
 
     const decodedRefreshToken = await this.jwtService.decodeToken(refreshToken);
 
-    authDeviceSession.issuedAt = new Date(decodedRefreshToken.iat * 1000);
-    authDeviceSession.expiresAt = new Date(decodedRefreshToken.exp * 1000);
+    authDeviceSession.updateDevice({
+      issuedAt: decodedRefreshToken.iat,
+      expiresAt: decodedRefreshToken.exp,
+    });
 
     const result = await this.authDeviceSessionService.save(authDeviceSession);
 
@@ -452,13 +422,7 @@ export class AuthService {
     }
 
     // Генерация нового кода и даты истечения
-    const updatedEmailConfirmation = {
-      confirmationCode: randomUUID(),
-      expirationDate: add(new Date(), { days: 1 }),
-      isConfirmed: false,
-    };
-
-    user.emailConfirmation = updatedEmailConfirmation;
+    user.generateNewConfirmationCode();
 
     const updateResult = await this.usersRepository.save(user);
 
@@ -473,7 +437,7 @@ export class AuthService {
     this.nodemailerService
       .sendEmail(
         email,
-        updatedEmailConfirmation.confirmationCode,
+        user.emailConfirmation.confirmationCode,
         this.emailExamples.passwordRecoveryEmail,
       )
       .catch((e: unknown) => {
@@ -495,9 +459,8 @@ export class AuthService {
         extensions: [{ field: 'recoveryCode', message: 'invalid recoveryCode' }],
       });
     }
-
-    user.passwordHash = await this.bcryptService.generateHash(newPassword);
-    user.emailConfirmation.isConfirmed = true;
+    const newPassHash = await this.bcryptService.generateHash(newPassword);
+    user.updateUserPass(newPassHash);
 
     await this.usersRepository.save(user);
 

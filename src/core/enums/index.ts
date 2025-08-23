@@ -17,3 +17,8 @@ export enum LikeStatus {
   Dislike = 'Dislike',
   None = 'None',
 }
+
+export enum IncrementType {
+  Increment = 'Increment',
+  Decrement = 'Decrement',
+}

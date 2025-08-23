@@ -1,5 +1,5 @@
 import { PaginatedOutput } from '../../../core/types/paginated.output';
-import { Blog } from './index';
+import { Blog } from '../../../db/models/blog.model';
 
 export type BlogListPaginatedOutput = {
   items: Blog[];

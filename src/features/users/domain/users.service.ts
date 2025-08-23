@@ -2,10 +2,9 @@ import { UserQueryInput } from '../types/user-query.input';
 import { WithId } from 'mongodb';
 import { UsersRepository } from '../repositories/users.repository';
 import { UserInputDto } from '../types/user-input.dto';
-import { User } from './user.entity';
 import { BcryptService } from '../../auth/adapters/bcrypt.service';
 import { inject, injectable } from 'inversify';
-import { UserDocument, UserModel } from '../../../db/models/user.model';
+import { User, UserDocument, UserModel } from '../../../db/models/user.model';
 import { ObjectResult } from '../../../core/result/object-result.entity';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { randomUUID } from 'node:crypto';
@@ -46,15 +45,11 @@ export class UsersService {
     const passwordHash = await this.bcrypt.generateHash(dto.password, 10);
 
     // Создаем SA до mongoose было: User.createSuperUser(dto.login, dto.email, passwordHash);
-    const newUser = new UserModel();
-
-    newUser.login = dto.login;
-    newUser.email = dto.email;
-    newUser.passwordHash = passwordHash;
-    newUser.emailConfirmation.isConfirmed = true;
-    newUser.emailConfirmation.confirmationCode = randomUUID();
-    newUser.emailConfirmation.expirationDate = add(new Date(), { minutes: 30 });
-
+    const newUser = UserModel.createSuperUser({
+      login: dto.login,
+      email: dto.email,
+      passwordHash: passwordHash,
+    });
     const result = await this.usersRepository.save(newUser);
 
     return ObjectResult.createSuccessResult(result);
