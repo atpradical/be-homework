@@ -14,6 +14,6 @@ export type CommentView = {
   likesInfo: {
     likesCount: number;
     dislikesCount: number;
-    myStatus: () => LikeStatus;
+    myStatus: LikeStatus;
   };
 };

@@ -1,14 +1,15 @@
 import mongoose, { HydratedDocument, model, Model } from 'mongoose';
 import { LIKES_COLLECTION_NAME } from '../mongo.db';
 import { LikeStatus } from '../../core';
+import { CreateLikeDto } from '../../features/likes/domain/dto';
 
 type Like = {
   userId: string;
-  commentId: string;
+  entityId: string; // postId or commentId
   likeStatus: LikeStatus;
 };
 
-const likesSchema = new mongoose.Schema<Like>(
+const likesSchema = new mongoose.Schema<Like, LikeModel, LikeMethods>(
   {
     userId: {
       type: String,
@@ -17,11 +18,11 @@ const likesSchema = new mongoose.Schema<Like>(
       maxLength: [100, 'Too long userId'],
     },
 
-    commentId: {
+    entityId: {
       type: String,
       required: true,
-      minLength: [1, 'CommentId is required'],
-      maxLength: [100, 'Too long CommentId'],
+      minLength: [1, 'EntityId is required'],
+      maxLength: [100, 'Too long EntityId'],
     },
 
     likeStatus: { type: String, enum: LikeStatus },
@@ -30,6 +31,27 @@ const likesSchema = new mongoose.Schema<Like>(
   { timestamps: true },
 );
 
-type LikeModel = Model<Like>;
-export type LikeDocument = HydratedDocument<Like>;
+const likeMethods = {
+  updateLikeStatus(likeStatus: LikeStatus) {
+    (this as LikeDocument).likeStatus = likeStatus;
+  },
+};
+
+const likeStatics = {
+  createLike(dto: CreateLikeDto) {
+    const like = new LikeModel();
+
+    like.userId = dto.userId;
+    like.entityId = dto.entityId;
+    like.likeStatus = LikeStatus.None;
+
+    return like;
+  },
+};
+
+type LikeMethods = typeof likeMethods;
+type LikeStatics = typeof likeStatics;
+
+type LikeModel = Model<Like, {}, LikeMethods> & LikeStatics;
+export type LikeDocument = HydratedDocument<Like, LikeMethods>;
 export const LikeModel = model<Like, LikeModel>(LIKES_COLLECTION_NAME, likesSchema);

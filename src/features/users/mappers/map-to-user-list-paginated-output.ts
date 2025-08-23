@@ -1,6 +1,6 @@
 import { WithId } from 'mongodb';
 import { UserListPaginatedOutput } from '../types/user-list-paginated.output';
-import { User } from '../domain/user.entity';
+import { User } from '../../../db/models/user.model';
 
 export function mapToUserListPaginatedOutput(
   users: WithId<User>[],

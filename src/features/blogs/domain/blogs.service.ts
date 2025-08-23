@@ -1,10 +1,9 @@
 import { WithId } from 'mongodb';
-import { Blog } from '../types';
 import { BlogInputDto } from '../types/blog-input.dto';
 import { BlogQueryInput } from '../types/blog-query.input';
 import { BlogsRepository } from '../repositories/blogs.repository';
 import { inject, injectable } from 'inversify';
-import { BlogModel } from '../../../db/models/blog.model';
+import { Blog, BlogModel } from '../../../db/models/blog.model';
 import { ObjectResult } from '../../../core/result/object-result.entity';
 import { ResultStatus } from '../../../core/result/resultCode';
 
@@ -21,12 +20,11 @@ export class BlogsService {
   }
 
   async create(dto: BlogInputDto): Promise<WithId<Blog>> {
-    const newBlog = new BlogModel();
-
-    //todo: переделать на класс
-    newBlog.name = dto.name;
-    newBlog.description = dto.description;
-    newBlog.websiteUrl = dto.websiteUrl;
+    const newBlog = BlogModel.createBlog({
+      name: dto.name,
+      description: dto.description,
+      websiteUrl: dto.websiteUrl,
+    });
 
     return this.blogsRepository.save(newBlog);
   }
@@ -42,10 +40,7 @@ export class BlogsService {
       });
     }
 
-    //todo: переделать на класс
-    blog.name = dto.name;
-    blog.description = dto.description;
-    blog.websiteUrl = dto.websiteUrl;
+    blog.updateBlog(dto);
 
     await this.blogsRepository.save(blog);
 

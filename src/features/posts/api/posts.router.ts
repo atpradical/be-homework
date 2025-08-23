@@ -16,6 +16,7 @@ import {
 import { commentsInputValidation } from '../../comments/api/middleware/comments.input-dto.validation';
 import { PostsController } from './posts.controller';
 import { container } from '../../../composition-root';
+import { likesInputValidation } from '../../../core/middlewares/validation/like-status.input-dto.validation';
 
 export const postsRouter = Router({});
 
@@ -69,6 +70,15 @@ postsRouter
     postsInputValidation,
     inputValidationResultMiddleware,
     postsController.updatePostHandler.bind(postsController),
+  )
+
+  .put(
+    '/:id/like-status',
+    accessTokenGuard,
+    postIdValidation,
+    likesInputValidation,
+    inputValidationResultMiddleware,
+    postsController.updatePostLikeStatusHandler.bind(postsController),
   )
 
   .delete(

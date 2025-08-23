@@ -1,7 +1,7 @@
 import { CommentView } from '../types';
 import { WithId } from 'mongodb';
-import { Comment } from '../domain/comment.entity';
 import { LikeStatus } from '../../../core';
+import { Comment } from '../../../db/models/comments.model';
 
 export function mapToCommentViewModel(
   comment: WithId<Comment>,
@@ -18,9 +18,7 @@ export function mapToCommentViewModel(
     likesInfo: {
       likesCount: comment.likesCount,
       dislikesCount: comment.dislikesCount,
-      myStatus: () => {
-        return likeStatus ?? LikeStatus.None;
-      },
+      myStatus: likeStatus ?? LikeStatus.None,
     },
   };
 }
