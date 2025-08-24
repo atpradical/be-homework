@@ -1,5 +1,6 @@
 import { injectable } from 'inversify';
 import { LikeDocument, LikeModel } from '../../../db/models/likes.model';
+import { LikeStatus } from '../../../core';
 
 @injectable()
 export class LikesRepository {
@@ -7,8 +8,14 @@ export class LikesRepository {
     return newLike.save();
   }
 
-  async findByCommentAndUserId(userId: string, entityId: string): Promise<LikeDocument | null> {
+  async findByEntityAndUserId(userId: string, entityId: string): Promise<LikeDocument | null> {
     return LikeModel.findOne({ userId, entityId });
+  }
+
+  async findAllLikes(entityIds: string[], limit?: number): Promise<LikeDocument[]> {
+    return LikeModel.find({ entityId: { $in: entityIds }, likeStatus: LikeStatus.Like })
+      .sort({ updatedAt: -1 })
+      .limit(limit);
   }
 
   async delete(userId: string, entityId: string): Promise<boolean> {

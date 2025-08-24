@@ -20,6 +20,7 @@ export function mapToCommentsListViewModel(prams: Params): CommentListPaginatedO
 
   // Сопоставление commentId -> likeStatus текущего пользователя
   const likesByComment = new Map<string, LikeStatus>();
+
   if (userId && likes?.length) {
     for (const l of likes) {
       likesByComment.set(l.entityId.toString(), l.likeStatus);

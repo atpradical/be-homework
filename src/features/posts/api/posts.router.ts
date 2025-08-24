@@ -25,21 +25,15 @@ const postsController = container.get(PostsController);
 postsRouter
   .get(
     '/',
+    accessTokenGuardOptional,
     paginationAndSortingValidation(PostSortField),
     inputValidationResultMiddleware,
     postsController.getPostListHandler.bind(postsController),
   )
 
-  .post(
-    '/',
-    superAdminGuard,
-    postsInputValidation,
-    inputValidationResultMiddleware,
-    postsController.createPostHandler.bind(postsController),
-  )
-
   .get(
     '/:id',
+    accessTokenGuardOptional,
     routeIdValidation,
     inputValidationResultMiddleware,
     postsController.getPostHandler.bind(postsController),
@@ -52,6 +46,14 @@ postsRouter
     paginationAndSortingValidation(CommentSortField),
     inputValidationResultMiddleware,
     postsController.getCommentsListHandler.bind(postsController),
+  )
+
+  .post(
+    '/',
+    superAdminGuard,
+    postsInputValidation,
+    inputValidationResultMiddleware,
+    postsController.createPostHandler.bind(postsController),
   )
 
   .post(
@@ -73,7 +75,7 @@ postsRouter
   )
 
   .put(
-    '/:id/like-status',
+    '/:postId/like-status',
     accessTokenGuard,
     postIdValidation,
     likesInputValidation,

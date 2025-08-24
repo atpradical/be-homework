@@ -7,6 +7,8 @@ type Like = {
   userId: string;
   entityId: string; // postId or commentId
   likeStatus: LikeStatus;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 const likesSchema = new mongoose.Schema<Like, LikeModel, LikeMethods>(

@@ -1,10 +1,13 @@
 import mongoose, { HydratedDocument, model, Model } from 'mongoose';
 import { POST_COLLECTION_NAME } from '../mongo.db';
-import { CreatePostDto, UpdatePostDto } from '../../features/posts/domain/dto';
+import { CreatePostDto, UpdatePostDto, AddPostNewestLikes } from '../../features/posts/domain/dto';
+import { IncrementType, LikeStatus } from '../../core';
+import { CommentDocument } from './comments.model';
 
 export type NewestLikes = {
   userId: string;
   login: string;
+  updatedAt: string;
 };
 
 const newestLikesSchema = new mongoose.Schema<NewestLikes>(
@@ -62,6 +65,44 @@ const postMethods = {
     that.shortDescription = dto.shortDescription;
     that.content = dto.content;
     that.blogId = dto.blogId;
+  },
+
+  addPostNewestLikes(dto: AddPostNewestLikes[]) {
+    const that = this as PostDocument;
+
+    that.newestLikes = dto;
+    that.markModified('newestLikes');
+  },
+
+  /* Увеличивает или уменьшает кол-во лайков на 1 у поста */
+  updateLikesCounter(status: Omit<LikeStatus, 'None'>, type: IncrementType) {
+    switch (type) {
+      case IncrementType.Increment: {
+        if (status === LikeStatus.Like) {
+          (this as CommentDocument).likesCount += 1;
+          break;
+        }
+        if (status === LikeStatus.Dislike) {
+          (this as CommentDocument).dislikesCount += 1;
+          break;
+        }
+        break;
+      }
+      case IncrementType.Decrement: {
+        if (status === LikeStatus.Like) {
+          (this as CommentDocument).likesCount -= 1;
+          break;
+        }
+        if (status === LikeStatus.Dislike) {
+          (this as CommentDocument).dislikesCount -= 1;
+          break;
+        }
+        break;
+      }
+      default: {
+        return;
+      }
+    }
   },
 };
 

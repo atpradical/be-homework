@@ -74,7 +74,7 @@ export class CommentsService {
       });
     }
 
-    const like = await this.likesService.findLikesByCommentAndUserId(userId, commentId);
+    const like = await this.likesService.findLikesByEntityAndUserId(userId, commentId);
 
     if (!like) {
       // Если like нет -> создаем новые
@@ -152,7 +152,7 @@ export class CommentsService {
       });
     }
 
-    const like = await this.likesService.findLikesByCommentAndUserId(userId, commentId);
+    const like = await this.likesService.findLikesByEntityAndUserId(userId, commentId);
 
     const viewDtoModel = mapToCommentViewModel(comment, like?.likeStatus);
 

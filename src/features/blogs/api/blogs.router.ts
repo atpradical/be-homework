@@ -11,6 +11,7 @@ import { BlogSortField } from '../types/blog-sort-field';
 import { postForBlogInputValidation } from '../../posts/api/middleware/posts.input-dto.validation';
 import { BlogsController } from './blogs.controller';
 import { container } from '../../../composition-root';
+import { accessTokenGuardOptional } from '../../auth/api/guards/access-token.guard';
 
 export const blogsRouter = Router({});
 
@@ -19,6 +20,7 @@ const blogsController = container.get(BlogsController);
 blogsRouter
   .get(
     '/',
+    accessTokenGuardOptional,
     paginationAndSortingValidation(BlogSortField),
     inputValidationResultMiddleware,
     blogsController.getBlogListHandler.bind(blogsController),
@@ -58,6 +60,7 @@ blogsRouter
 
   .get(
     '/:blogId/posts',
+    accessTokenGuardOptional,
     blogIdValidation,
     inputValidationResultMiddleware,
     blogsController.getPostListByBlogIdHandler.bind(blogsController),

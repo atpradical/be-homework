@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../core/helpers/set-default-sort-and-pagination';
 import { PostQueryInput } from '../types/post-query.input';
 import { mapToPostListPaginatedOutput } from '../mappers/map-to-post-list-paginated-output.util';
-import { HttpStatus, IdType, PostIdType, UserDetails } from '../../../core';
+import { HttpStatus, IdType, PostIdType } from '../../../core';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import {
   RequestWithBody,
@@ -12,11 +12,10 @@ import {
   RequestWithParamsAndQuery,
 } from '../../../core/types/requests';
 import { PostInputDto } from '../types/post-input.dto';
-import { PostViewModel } from '../types';
+import { PostViewModel } from '../types/post-view-model';
 import { ExtensionType } from '../../../core/result/object-result.entity';
 import { ResultStatus } from '../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../core/result/resultCodeToHttpException';
-import { mapToPostViewModel } from '../mappers/map-to-post-view-model';
 import { ResponseWithExtensions } from '../../../core/types/responses';
 import { CommentQueryInput } from '../../comments/types/comment-query.input';
 import { CommentListPaginatedOutput } from '../../comments/types/comment-list-paginated.output';
@@ -40,6 +39,9 @@ export class PostsController {
   ) {}
 
   async getPostListHandler(req: Request, res: Response) {
+    const userId = req.user?.id;
+    let likes = [];
+
     try {
       const queryInput = setDefaultSortAndPaginationIfNotExist(
         req.query as unknown as PostQueryInput,
@@ -47,10 +49,20 @@ export class PostsController {
 
       const { items, totalCount } = await this.postsQueryRepository.findAll(queryInput);
 
-      const postListOutput = mapToPostListPaginatedOutput(items, {
-        pageNumber: queryInput.pageNumber,
-        pageSize: queryInput.pageSize,
-        totalCount,
+      if (userId) {
+        const postIds = items.map((item) => item._id.toString());
+        likes = await this.likesQueryRepository.findAllByEntityAndUserId(userId, postIds);
+      }
+
+      const postListOutput = mapToPostListPaginatedOutput({
+        posts: items,
+        pagination: {
+          pageNumber: queryInput.pageNumber,
+          pageSize: queryInput.pageSize,
+          totalCount,
+        },
+        userId,
+        likes,
       });
 
       res.status(HttpStatus.Ok).send(postListOutput);
@@ -60,17 +72,19 @@ export class PostsController {
   }
 
   async getPostHandler(req: RequestWithParams<IdType>, res: Response<PostViewModel | null>) {
-    const id = req.params.id;
+    const userId = req.user?.id;
+    const postId = req.params.id;
 
-    const result = await this.postsQueryRepository.findById(id);
+    //  todo: Перенести в QueryRepository ?
+    // const result = await this.postsQueryRepository.findById(postId);
+    const result = await this.postsService.findPostWithUserStatus(postId, userId);
 
-    if (!result) {
+    if (result.status !== ResultStatus.Success) {
       res.sendStatus(HttpStatus.NotFound);
       return;
     }
 
-    const postViewModel = mapToPostViewModel(result);
-    res.status(HttpStatus.Ok).send(postViewModel);
+    res.status(HttpStatus.Ok).send(result.data);
     return;
   }
 
@@ -85,8 +99,7 @@ export class PostsController {
       return;
     }
 
-    const postViewModel = mapToPostViewModel(result.data);
-    res.status(HttpStatus.Created).send(postViewModel);
+    res.status(HttpStatus.Created).send(result.data);
     return;
   }
 
@@ -122,16 +135,24 @@ export class PostsController {
   }
 
   async updatePostLikeStatusHandler(
-    req: RequestWithParamsAndBody<UserDetails, LikeInputDto>,
+    req: RequestWithParamsAndBodyAndUserId<PostIdType, LikeInputDto, IdType>,
     res: Response,
   ) {
     const userId = req.user.id;
-    const postId = req.params.id;
+    const postId = req.params.postId;
+    const likeStatus = req.body.likeStatus;
 
-    // post Service updatePostLikeStatus
+    const result = await this.postsService.updatePostLikeStatus(userId, postId, likeStatus);
+
+    if (result.status !== ResultStatus.Success) {
+      res.status(resultCodeToHttpException(result.status)).send(result.extensions);
+      return;
+    }
+
+    res.sendStatus(HttpStatus.NoContent);
+    return;
   }
 
-  // todo: выносить логику в QueryService ? или перенести в QueryRepo ?
   async getCommentsListHandler(
     req: RequestWithParamsAndQuery<PostIdType, CommentQueryInput>,
     res: Response<CommentListPaginatedOutput | string>,
@@ -153,7 +174,7 @@ export class PostsController {
 
     if (userId) {
       const commentIds = items.map((item) => item.id);
-      likes = await this.likesQueryRepository.findAllByCommentAndUserId(userId, commentIds);
+      likes = await this.likesQueryRepository.findAllByEntityAndUserId(userId, commentIds);
     }
 
     const resultViewModel = mapToCommentsListViewModel({
@@ -176,8 +197,9 @@ export class PostsController {
   ) {
     const userId = req.user.id;
     const postId = req.params.postId;
-    const dto = req.body;
-    const result = await this.postsService.createComment({ postId, dto, userId });
+    const content = req.body.content;
+    // const result = await this.postsService.createComment({ postId, ...dto, userId });
+    const result = await this.postsService.createComment(userId, postId, content);
 
     if (result.status !== ResultStatus.Success) {
       res.status(resultCodeToHttpException(result.status)).send(result.extensions);

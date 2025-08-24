@@ -43,7 +43,7 @@ const commentSchema = new mongoose.Schema<Comment, CommentModel, CommentMethods>
 );
 
 const commentMethods = {
-  /* Увеличивает или уменьшает кол-во лайков на 1 у поста */
+  /* Увеличивает или уменьшает кол-во лайков на 1 у комментария */
   updateLikesCounter(status: Omit<LikeStatus, 'None'>, type: IncrementType) {
     switch (type) {
       case IncrementType.Increment: {

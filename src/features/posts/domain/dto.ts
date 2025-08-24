@@ -16,3 +16,11 @@ export class UpdatePostDto {
     public blogId: string,
   ) {}
 }
+
+export class AddPostNewestLikes {
+  constructor(
+    public userId: string,
+    public login: string,
+    public updatedAt: string,
+  ) {}
+}

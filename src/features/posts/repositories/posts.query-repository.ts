@@ -1,7 +1,8 @@
-import { WithId } from 'mongodb';
 import { PostQueryInput } from '../types/post-query.input';
 import { injectable } from 'inversify';
-import { Post, PostDocument, PostModel } from '../../../db/models/post.model';
+import { PostDocument, PostModel } from '../../../db/models/post.model';
+import { mapToPostViewModel } from '../mappers/map-to-post-view-model';
+import { PostViewModel } from '../types/post-view-model';
 
 @injectable()
 export class PostsQueryRepository {
@@ -22,7 +23,13 @@ export class PostsQueryRepository {
     return { items, totalCount };
   }
 
-  async findById(id: string): Promise<WithId<Post> | null> {
-    return PostModel.findById(id);
+  async findById(id: string): Promise<PostViewModel | null> {
+    const post = await PostModel.findById(id);
+
+    if (!post) {
+      return null;
+    }
+
+    return mapToPostViewModel(post);
   }
 }

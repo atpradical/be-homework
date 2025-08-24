@@ -32,6 +32,11 @@ export class UsersRepository {
     return { items, totalCount };
   }
 
+  async findAllUsersByIds(userIds: string[]): Promise<UserDocument[]> {
+    // return UserModel.find({ _id: { $in: userIds } });
+    return UserModel.where('_id').in(userIds);
+  }
+
   async findUserById(id: string): Promise<UserDocument | null> {
     return UserModel.findById(id);
   }

@@ -6,11 +6,12 @@ import { LikeDocument } from '../../../db/models/likes.model';
 export class LikesService {
   constructor(@inject(LikesRepository) private likesRepository: LikesRepository) {}
 
-  async findLikesByCommentAndUserId(
-    userId: string,
-    commentId: string,
-  ): Promise<LikeDocument | null> {
-    return this.likesRepository.findByCommentAndUserId(userId, commentId);
+  async findLikesByEntityAndUserId(userId: string, entityId: string): Promise<LikeDocument | null> {
+    return this.likesRepository.findByEntityAndUserId(userId, entityId);
+  }
+
+  async findThreeNewestLikesToEntity(entityId: string[]): Promise<LikeDocument[]> {
+    return this.likesRepository.findAllLikes(entityId, 3);
   }
 
   async save(newLike: LikeDocument): Promise<LikeDocument> {

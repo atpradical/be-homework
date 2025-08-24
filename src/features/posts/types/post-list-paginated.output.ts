@@ -1,6 +1,6 @@
 import { PaginatedOutput } from '../../../core/types/paginated.output';
-import { Post } from '../../../db/models/post.model';
+import { PostViewModel } from './post-view-model';
 
 export type PostListPaginatedOutput = {
-  items: Post[];
+  items: PostViewModel[];
 } & PaginatedOutput;

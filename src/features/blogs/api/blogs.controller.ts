@@ -19,12 +19,13 @@ import { ResultStatus } from '../../../core/result/resultCode';
 import { resultCodeToHttpException } from '../../../core/result/resultCodeToHttpException';
 import { mapToPostListPaginatedOutput } from '../../posts/mappers/map-to-post-list-paginated-output.util';
 import { PostInputDto } from '../../posts/types/post-input.dto';
-import { PostViewModel } from '../../posts/types';
+import { PostViewModel } from '../../posts/types/post-view-model';
 import { mapToPostViewModel } from '../../posts/mappers/map-to-post-view-model';
 import { BlogsService } from '../domain/blogs.service';
 import { BlogsQueryRepository } from '../repositories/blogs.query-repository';
 import { PostsService } from '../../posts/domain/posts.service';
 import { inject, injectable } from 'inversify';
+import { LikesQueryRepository } from '../../likes/repositories/likes.query-repository';
 
 @injectable()
 export class BlogsController {
@@ -32,6 +33,7 @@ export class BlogsController {
     @inject(BlogsService) private blogsService: BlogsService,
     @inject(BlogsQueryRepository) private blogsQueryRepository: BlogsQueryRepository,
     @inject(PostsService) private postsService: PostsService,
+    @inject(LikesQueryRepository) private likesQueryRepository: LikesQueryRepository,
   ) {}
 
   async getBlogListHandler(req: Request, res: Response) {
@@ -130,10 +132,23 @@ export class BlogsController {
       data: { items, totalCount },
     } = result;
 
-    const postListOutput = mapToPostListPaginatedOutput(items, {
-      pageNumber: queryInput.pageNumber,
-      pageSize: queryInput.pageSize,
-      totalCount,
+    const userId = req.user?.id;
+    let likes = [];
+
+    if (userId) {
+      const postIds = items.map((item) => item._id.toString());
+      likes = await this.likesQueryRepository.findAllByEntityAndUserId(userId, postIds);
+    }
+
+    const postListOutput = mapToPostListPaginatedOutput({
+      posts: items,
+      pagination: {
+        pageNumber: queryInput.pageNumber,
+        pageSize: queryInput.pageSize,
+        totalCount,
+      },
+      userId,
+      likes,
     });
 
     res.status(HttpStatus.Ok).send(postListOutput);

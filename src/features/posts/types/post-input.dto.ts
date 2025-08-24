@@ -1,6 +1,8 @@
-export type PostInputDto = {
-  title: string;
-  shortDescription: string;
-  content: string;
-  blogId: string;
-};
+export class PostInputDto {
+  constructor(
+    public title: string,
+    public shortDescription: string,
+    public content: string,
+    public blogId: string,
+  ) {}
+}
